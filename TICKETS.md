@@ -434,11 +434,11 @@ Players may need to correct buy-in, cash-out, start/end time, notes, or rating a
 
 **Acceptance Criteria**:
 
-- [ ] Each session row has a Delete button/icon
-- [ ] Tapping Delete shows a confirmation dialog: "Delete this session? This cannot be undone."
-- [ ] Confirming calls `DELETE /api/sessions/[id]`
-- [ ] On success, the session is removed from the list without a full page reload
-- [ ] Canceling the dialog leaves the session intact
+- [x] Each session row has a Delete button/icon
+- [x] Tapping Delete shows a confirmation dialog: "Delete this session? This cannot be undone."
+- [x] Confirming calls `DELETE /api/sessions/[id]`
+- [x] On success, the session is removed from the list without a full page reload
+- [x] Canceling the dialog leaves the session intact
 
 ---
 
