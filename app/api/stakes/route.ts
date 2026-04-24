@@ -1,5 +1,7 @@
+import { StakesRepository } from "@/lib/repositories/stakes";
+
 export async function GET() {
-  return Response.json([]);
+  return Response.json(StakesRepository.getAll());
 }
 
 export async function POST() {

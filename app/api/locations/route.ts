@@ -1,5 +1,7 @@
+import { LocationRepository } from "@/lib/repositories/locations";
+
 export async function GET() {
-  return Response.json([]);
+  return Response.json(LocationRepository.getAll());
 }
 
 export async function POST() {
