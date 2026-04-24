@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { Location, Stakes, Session } from "@/lib/types";
+import { useEffect, useState } from "react";
+import { Location, Stakes, Session, AppSettings } from "@/lib/types";
 import { createSession } from "@/lib/client/sessions";
+import { getSettings } from "@/lib/client/settings";
 
 interface Props {
   locations: Location[];
@@ -10,20 +11,31 @@ interface Props {
   onSessionStarted: (session: Session) => void;
 }
 
-export default function StartSessionForm({
-  locations,
-  stakes,
-  onSessionStarted,
-}: Props) {
+export default function StartSessionForm({ locations, stakes, onSessionStarted }: Props) {
   const [locationId, setLocationId] = useState("");
   const [stakesId, setStakesId] = useState("");
   const [buyIn, setBuyIn] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [settings, setSettings] = useState<AppSettings | null>(null);
+
+  useEffect(() => {
+    getSettings().then(setSettings);
+  }, []);
 
   const hasLocations = locations.length > 0;
   const hasStakes = stakes.length > 0;
   const isValid = locationId && stakesId && buyIn && parseFloat(buyIn) >= 0.01;
+
+  const hasDefaults =
+    settings !== null &&
+    (settings.default_location_id !== null || settings.default_stakes_id !== null);
+
+  function applyDefaults() {
+    if (!settings) return;
+    if (settings.default_location_id) setLocationId(settings.default_location_id);
+    if (settings.default_stakes_id) setStakesId(settings.default_stakes_id);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -46,11 +58,7 @@ export default function StartSessionForm({
       });
       onSessionStarted(session);
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Something went wrong. Please try again.",
-      );
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -66,10 +74,7 @@ export default function StartSessionForm({
               ? "No locations configured."
               : "No stakes configured."}
         </p>
-        <a
-          href="/settings"
-          className="mt-3 inline-block text-sm font-medium text-emerald-400 hover:text-emerald-300"
-        >
+        <a href="/settings" className="mt-3 inline-block text-sm font-medium text-emerald-400 hover:text-emerald-300">
           Go to Settings to add them →
         </a>
       </div>
@@ -78,10 +83,18 @@ export default function StartSessionForm({
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      {hasDefaults && (
+        <button
+          type="button"
+          onClick={applyDefaults}
+          className="h-10 rounded-lg border border-zinc-700 text-sm font-medium text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white"
+        >
+          Use Defaults
+        </button>
+      )}
+
       <div className="flex flex-col gap-1">
-        <label htmlFor="location" className="text-sm font-medium text-zinc-300">
-          Location
-        </label>
+        <label htmlFor="location" className="text-sm font-medium text-zinc-300">Location</label>
         <select
           id="location"
           value={locationId}
@@ -91,17 +104,13 @@ export default function StartSessionForm({
         >
           <option value="">Select a location</option>
           {locations.map((l) => (
-            <option key={l.id} value={l.id}>
-              {l.name}
-            </option>
+            <option key={l.id} value={l.id}>{l.name}</option>
           ))}
         </select>
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="stakes" className="text-sm font-medium text-zinc-300">
-          Stakes
-        </label>
+        <label htmlFor="stakes" className="text-sm font-medium text-zinc-300">Stakes</label>
         <select
           id="stakes"
           value={stakesId}
@@ -111,17 +120,13 @@ export default function StartSessionForm({
         >
           <option value="">Select stakes</option>
           {stakes.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.label}
-            </option>
+            <option key={s.id} value={s.id}>{s.label}</option>
           ))}
         </select>
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="buy-in" className="text-sm font-medium text-zinc-300">
-          Buy-in ($)
-        </label>
+        <label htmlFor="buy-in" className="text-sm font-medium text-zinc-300">Buy-in ($)</label>
         <input
           id="buy-in"
           type="number"

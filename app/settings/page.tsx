@@ -1,5 +1,6 @@
 import LocationsManager from "@/app/components/LocationsManager";
 import StakesManager from "@/app/components/StakesManager";
+import AppSettingsManager from "@/app/components/AppSettingsManager";
 
 export default function SettingsPage() {
   return (
@@ -15,9 +16,14 @@ export default function SettingsPage() {
           <LocationsManager />
         </div>
 
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6">
+        <div className="mb-6 rounded-xl border border-zinc-800 bg-zinc-900 p-6">
           <h2 className="mb-4 text-base font-semibold text-white">Stakes</h2>
           <StakesManager />
+        </div>
+
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6">
+          <h2 className="mb-4 text-base font-semibold text-white">App Settings</h2>
+          <AppSettingsManager />
         </div>
       </div>
     </main>
