@@ -5,10 +5,9 @@ export const PIT_SETTINGS = "PIT_SETTINGS";
 
 export function getItem<T>(key: string): T | null {
   if (typeof window === "undefined") return null;
-  const raw = window.localStorage.getItem(key);
-  if (raw === null) return null;
   try {
-    return JSON.parse(raw) as T;
+    const raw = window.localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : null;
   } catch {
     return null;
   }
