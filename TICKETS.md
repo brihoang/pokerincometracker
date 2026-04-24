@@ -419,14 +419,14 @@ Players may need to correct buy-in, cash-out, start/end time, notes, or rating a
 
 **Acceptance Criteria**:
 
-- [ ] Each session row in the history list has an Edit button/icon
-- [ ] Tapping Edit opens an edit form (full-page or modal) pre-filled with all session fields
-- [ ] Editable fields: `started_at`, `ended_at`, `buy_in`, `cash_out`, `notes`, `rating`
-- [ ] Location and stakes are displayed as read-only (editing them is not supported in V1; snapshot values are preserved as-is)
-- [ ] Submitting calls `PUT /api/sessions/[id]` with the changed fields
-- [ ] On successful save, `profit_loss` and `duration_mins` are recomputed server-side using the updated values
-- [ ] On success, the session row in the list updates to reflect the new values without a full page reload
-- [ ] Validation: `ended_at` must be after `started_at`; `buy_in` and `cash_out` must be valid non-negative numbers
+- [x] Each session row in the history list has an Edit button/icon
+- [x] Tapping Edit opens an edit form (full-page or modal) pre-filled with all session fields
+- [x] Editable fields: `started_at`, `ended_at`, `buy_in`, `cash_out`, `notes`, `rating`
+- [x] Location and stakes are displayed as read-only (editing them is not supported in V1; snapshot values are preserved as-is)
+- [x] Submitting calls `PUT /api/sessions/[id]` with the changed fields
+- [x] On successful save, `profit_loss` and `duration_mins` are recomputed server-side using the updated values
+- [x] On success, the session row in the list updates to reflect the new values without a full page reload
+- [x] Validation: `ended_at` must be after `started_at`; `buy_in` and `cash_out` must be valid non-negative numbers
 
 ---
 
