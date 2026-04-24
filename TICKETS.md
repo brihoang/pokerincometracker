@@ -448,12 +448,12 @@ Players want to isolate their results at a specific venue or stake level.
 
 **Acceptance Criteria**:
 
-- [ ] A filter bar above the session list contains two dropdowns: "Location" and "Stakes"
-- [ ] Both dropdowns are populated from the distinct values present in the session list (not from the saved locations/stakes lists — historical snapshots may differ)
-- [ ] Selecting a value filters the visible session list in real time (client-side filter, no API call required)
-- [ ] Both filters can be active simultaneously (AND logic — location AND stakes)
-- [ ] A "Clear Filters" action resets both dropdowns to "All"
-- [ ] Summary stats (total sessions, total P&L, total hours) update to reflect the filtered subset
+- [x] A filter bar above the session list contains two dropdowns: "Location" and "Stakes"
+- [x] Both dropdowns are populated from the distinct values present in the session list (not from the saved locations/stakes lists — historical snapshots may differ)
+- [x] Selecting a value filters the visible session list in real time (client-side filter, no API call required)
+- [x] Both filters can be active simultaneously (AND logic — location AND stakes)
+- [x] A "Clear Filters" action resets both dropdowns to "All"
+- [x] Summary stats (total sessions, total P&L, total hours) update to reflect the filtered subset
 
 ---
 
@@ -471,12 +471,12 @@ Quick-glance numbers that tell the player how they're doing overall.
 
 **Acceptance Criteria**:
 
-- [ ] Dashboard displays four stat tiles: Total Sessions, Total P&L (USD), Total Hours Played, Average P&L per Session
-- [ ] Values are computed from all closed sessions fetched from `GET /api/sessions`
-- [ ] Total P&L displays with "+" prefix for positive, "-" for negative, always with dollar sign
-- [ ] Average P&L per session displays with same sign convention
-- [ ] Total Hours Played displays as decimal hours (e.g., "47.5 hrs") or hours + minutes (e.g., "47h 30m") — pick one format and apply consistently
-- [ ] All four tiles render gracefully with zero sessions (show "0" or "$0.00" — no errors or blank tiles)
+- [x] Dashboard displays four stat tiles: Total Sessions, Total P&L (USD), Total Hours Played, Average P&L per Session
+- [x] Values are computed from all closed sessions fetched from `GET /api/sessions`
+- [x] Total P&L displays with "+" prefix for positive, "-" for negative, always with dollar sign
+- [x] Average P&L per session displays with same sign convention
+- [x] Total Hours Played displays as decimal hours (e.g., "47.5 hrs") or hours + minutes (e.g., "47h 30m") — pick one format and apply consistently
+- [x] All four tiles render gracefully with zero sessions (show "0" or "$0.00" — no errors or blank tiles)
 
 ---
 
