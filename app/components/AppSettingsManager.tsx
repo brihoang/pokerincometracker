@@ -2,22 +2,21 @@
 
 import { useEffect, useState } from "react";
 import { Location, Stakes } from "@/lib/types";
-import { getLocations } from "@/lib/client/locations";
-import { getStakes } from "@/lib/client/stakes";
 import { getSettings, updateSettings } from "@/lib/client/settings";
 
-export default function AppSettingsManager() {
-  const [locations, setLocations] = useState<Location[]>([]);
-  const [stakes, setStakes] = useState<Stakes[]>([]);
+interface Props {
+  locations: Location[];
+  stakes: Stakes[];
+}
+
+export default function AppSettingsManager({ locations, stakes }: Props) {
   const [defaultLocationId, setDefaultLocationId] = useState<string>("");
   const [defaultStakesId, setDefaultStakesId] = useState<string>("");
   const [saved, setSaved] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    Promise.all([getLocations(), getStakes(), getSettings()]).then(([locs, stks, settings]) => {
-      setLocations(locs);
-      setStakes(stks);
+    getSettings().then((settings) => {
       setDefaultLocationId(settings.default_location_id ?? "");
       setDefaultStakesId(settings.default_stakes_id ?? "");
     });

@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Stakes } from "@/lib/types";
-import { getStakes, createStakes, updateStakes, deleteStakes, buildStakesLabel } from "@/lib/client/stakes";
+import { createStakes, updateStakes, deleteStakes, buildStakesLabel } from "@/lib/client/stakes";
 
 function StakesForm({
   initialSb,
@@ -90,20 +90,20 @@ function StakesForm({
   );
 }
 
-export default function StakesManager() {
-  const [stakes, setStakes] = useState<Stakes[]>([]);
+interface Props {
+  stakes: Stakes[];
+  onChange: (stakes: Stakes[]) => void;
+}
+
+export default function StakesManager({ stakes, onChange }: Props) {
   const [editId, setEditId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    getStakes().then(setStakes);
-  }, []);
 
   async function handleAdd(sb: number, bb: number) {
     setError(null);
     try {
       const entry = await createStakes({ small_blind: sb, big_blind: bb });
-      setStakes((prev) => [...prev, entry]);
+      onChange([...stakes, entry]);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to add stakes");
     }
@@ -113,7 +113,7 @@ export default function StakesManager() {
     setError(null);
     try {
       const updated = await updateStakes(id, { small_blind: sb, big_blind: bb });
-      setStakes((prev) => prev.map((s) => (s.id === id ? updated : s)));
+      onChange(stakes.map((s) => (s.id === id ? updated : s)));
       setEditId(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update stakes");
@@ -123,7 +123,7 @@ export default function StakesManager() {
   async function handleDelete(id: string, label: string) {
     if (!confirm(`Delete "${label}"? Sessions using this stakes level will not be affected.`)) return;
     await deleteStakes(id);
-    setStakes((prev) => prev.filter((s) => s.id !== id));
+    onChange(stakes.filter((s) => s.id !== id));
   }
 
   return (

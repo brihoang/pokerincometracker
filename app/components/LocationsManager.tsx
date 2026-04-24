@@ -1,20 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Location } from "@/lib/types";
-import { getLocations, createLocation, updateLocation, deleteLocation } from "@/lib/client/locations";
+import { createLocation, updateLocation, deleteLocation } from "@/lib/client/locations";
 
-export default function LocationsManager() {
-  const [locations, setLocations] = useState<Location[]>([]);
+interface Props {
+  locations: Location[];
+  onChange: (locations: Location[]) => void;
+}
+
+export default function LocationsManager({ locations, onChange }: Props) {
   const [newName, setNewName] = useState("");
   const [editId, setEditId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    getLocations().then(setLocations);
-  }, []);
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
@@ -23,7 +23,7 @@ export default function LocationsManager() {
     setSubmitting(true);
     try {
       const location = await createLocation(newName.trim());
-      setLocations((prev) => [...prev, location].sort((a, b) => a.name.localeCompare(b.name)));
+      onChange([...locations, location].sort((a, b) => a.name.localeCompare(b.name)));
       setNewName("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to add location");
@@ -38,7 +38,7 @@ export default function LocationsManager() {
     setSubmitting(true);
     try {
       const updated = await updateLocation(id, editName.trim());
-      setLocations((prev) => prev.map((l) => (l.id === id ? updated : l)).sort((a, b) => a.name.localeCompare(b.name)));
+      onChange(locations.map((l) => (l.id === id ? updated : l)).sort((a, b) => a.name.localeCompare(b.name)));
       setEditId(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update location");
@@ -50,7 +50,7 @@ export default function LocationsManager() {
   async function handleDelete(id: string, name: string) {
     if (!confirm(`Delete "${name}"? Sessions using this location will not be affected.`)) return;
     await deleteLocation(id);
-    setLocations((prev) => prev.filter((l) => l.id !== id));
+    onChange(locations.filter((l) => l.id !== id));
   }
 
   return (
