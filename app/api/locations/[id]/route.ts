@@ -1,11 +1,25 @@
-export async function GET() {
-  return Response.json({});
+import { NextRequest } from "next/server";
+import { LocationRepository } from "@/lib/repositories/locations";
+
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const body = await req.json();
+  const { name } = body;
+
+  if (!name?.trim()) {
+    return Response.json({ error: "Location name is required" }, { status: 400 });
+  }
+
+  const updated = LocationRepository.update(id, { name });
+  if (!updated) return Response.json({ error: "Location not found" }, { status: 404 });
+
+  return Response.json(updated);
 }
 
-export async function PUT() {
-  return Response.json({});
-}
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const removed = LocationRepository.delete(id);
+  if (!removed) return Response.json({ error: "Location not found" }, { status: 404 });
 
-export async function DELETE() {
-  return Response.json({});
+  return new Response(null, { status: 204 });
 }
