@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { location_id, location_name, stakes_id, stakes_label, buy_in, started_at } = body;
+  const { location_id, location_name, stakes_id, stakes_label, big_blind, buy_in, started_at } = body;
 
   if (!location_id || !location_name || !stakes_id || !stakes_label || buy_in == null || !started_at) {
     return Response.json(
@@ -28,6 +28,7 @@ export async function POST(req: NextRequest) {
     location_name,
     stakes_id,
     stakes_label,
+    big_blind: big_blind ?? null,
     buy_in,
     started_at,
     game_type: "NLH",

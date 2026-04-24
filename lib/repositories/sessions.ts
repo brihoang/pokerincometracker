@@ -5,7 +5,7 @@ import { generateId } from "@/lib/utils/uuid";
 type CreateSessionData = Omit<
   Session,
   "id" | "ended_at" | "duration_mins" | "cash_out" | "profit_loss" | "notes" | "rating" | "status" | "created_at" | "updated_at"
->;
+> & { big_blind?: number | null };
 
 function getAll(): Session[] {
   const sessions = getItem<Session[]>(PIT_SESSIONS) ?? [];
