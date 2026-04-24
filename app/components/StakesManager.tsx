@@ -44,6 +44,7 @@ function StakesForm({
           <label className="text-xs text-zinc-400">Small Blind ($)</label>
           <input
             type="number"
+            inputMode="decimal"
             min="0.01"
             step="0.01"
             placeholder="1"
@@ -57,6 +58,7 @@ function StakesForm({
           <label className="text-xs text-zinc-400">Big Blind ($)</label>
           <input
             type="number"
+            inputMode="decimal"
             min="0.01"
             step="0.01"
             placeholder="2"

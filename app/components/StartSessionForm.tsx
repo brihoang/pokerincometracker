@@ -133,6 +133,7 @@ export default function StartSessionForm({ locations, stakes, onSessionStarted }
         <input
           id="buy-in"
           type="number"
+          inputMode="decimal"
           min="0.01"
           step="0.01"
           placeholder="0.00"

@@ -172,6 +172,7 @@ export default function CloseSessionPage() {
             <input
               id="buyIn"
               type="number"
+              inputMode="decimal"
               min="0.01"
               step="0.01"
               required
@@ -187,6 +188,7 @@ export default function CloseSessionPage() {
             <input
               id="cashOut"
               type="number"
+              inputMode="decimal"
               min="0"
               step="0.01"
               required
