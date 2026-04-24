@@ -221,11 +221,11 @@ The primary action in the app. The player selects a location, selects stakes, en
 Players who always play the same game should be able to fill the form in one tap using their configured defaults.
 
 **Acceptance Criteria**:
-- [ ] Start Session form fetches `GET /api/settings` on load
-- [ ] If `default_location_id` and/or `default_stakes_id` are set, a "Use Defaults" button appears above the form fields
-- [ ] Tapping "Use Defaults" pre-fills the location and stakes dropdowns with the configured defaults
-- [ ] If neither default is set, the button is not rendered
-- [ ] Pre-fill does not submit the form — the user still taps "Start Session" to confirm
+- [x] Start Session form fetches `GET /api/settings` on load
+- [x] If `default_location_id` and/or `default_stakes_id` are set, a "Use Defaults" button appears above the form fields
+- [x] Tapping "Use Defaults" pre-fills the location and stakes dropdowns with the configured defaults
+- [x] If neither default is set, the button is not rendered
+- [x] Pre-fill does not submit the form — the user still taps "Start Session" to confirm
 
 ---
 
@@ -343,9 +343,9 @@ Players must be able to add, rename, and delete their saved venues.
 ### M3-06 — Wire GET and PUT /api/settings to SettingsRepository
 
 **Acceptance Criteria**:
-- [ ] `GET /api/settings` returns the current `AppSettings` (or defaults if none stored)
-- [ ] `PUT /api/settings` accepts `{ default_location_id?, default_stakes_id? }`, merges with existing settings, and returns the updated object
-- [ ] Missing or null values for `default_location_id` / `default_stakes_id` are accepted and stored as `null` (i.e., user can clear defaults)
+- [x] `GET /api/settings` returns the current `AppSettings` (or defaults if none stored)
+- [x] `PUT /api/settings` accepts `{ default_location_id?, default_stakes_id? }`, merges with existing settings, and returns the updated object
+- [x] Missing or null values for `default_location_id` / `default_stakes_id` are accepted and stored as `null` (i.e., user can clear defaults)
 
 ---
 
@@ -354,12 +354,12 @@ Players must be able to add, rename, and delete their saved venues.
 Players can configure a default location and default stakes so the Start Session form pre-fills automatically.
 
 **Acceptance Criteria**:
-- [ ] App Settings section shows two dropdowns: "Default Location" and "Default Stakes"
-- [ ] Both dropdowns are populated from `GET /api/locations` and `GET /api/stakes` respectively
-- [ ] Both dropdowns include a "None" / empty option so defaults can be cleared
-- [ ] Current defaults are pre-selected on load from `GET /api/settings`
-- [ ] Changes are saved via `PUT /api/settings` on selection change or an explicit "Save" action
-- [ ] A success confirmation is shown after saving
+- [x] App Settings section shows two dropdowns: "Default Location" and "Default Stakes"
+- [x] Both dropdowns are populated from `GET /api/locations` and `GET /api/stakes` respectively
+- [x] Both dropdowns include a "None" / empty option so defaults can be cleared
+- [x] Current defaults are pre-selected on load from `GET /api/settings`
+- [x] Changes are saved via `PUT /api/settings` on selection change or an explicit "Save" action
+- [x] A success confirmation is shown after saving
 
 ---
 
