@@ -39,11 +39,8 @@ export default function Home() {
         </div>
 
         {openSession ? (
-          <div className="rounded-xl border border-emerald-800 bg-emerald-950 p-5">
-            <p className="text-sm font-medium text-emerald-400">Session in progress</p>
-            <p className="mt-1 text-white">
-              {openSession.location_name} · {openSession.stakes_label} · ${openSession.buy_in}
-            </p>
+          <div className="rounded-xl border border-emerald-800 bg-emerald-950 p-5 text-center">
+            <p className="text-zinc-400">A session is already in progress.</p>
             <a href="/sessions/close" className="mt-3 inline-block text-sm font-medium text-emerald-400 hover:text-emerald-300">
               Close session →
             </a>
