@@ -9,6 +9,7 @@ type CreateSessionData = {
   location_name: string;
   stakes_id: string;
   stakes_label: string;
+  big_blind: number | null;
   buy_in: number;
   started_at: string;
 };
@@ -26,6 +27,14 @@ function localSave(sessions: Session[]): void {
 export async function getSessions(): Promise<Session[]> {
   if (isLoggedIn()) return fetch("/api/sessions").then((r) => r.json());
   return localGetAll();
+}
+
+export async function getSessionById(id: string): Promise<Session | null> {
+  if (isLoggedIn()) {
+    const res = await fetch(`/api/sessions/${id}`);
+    return res.ok ? res.json() : null;
+  }
+  return (getItem<Session[]>(PIT_SESSIONS) ?? []).find((s) => s.id === id) ?? null;
 }
 
 export async function getOpenSession(): Promise<Session | null> {
@@ -59,6 +68,7 @@ export async function createSession(data: CreateSessionData): Promise<Session> {
     notes: null,
     rating: null,
     game_type: "NLH",
+    big_blind: data.big_blind,
     status: "open",
     created_at: now,
     updated_at: now,

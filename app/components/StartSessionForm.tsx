@@ -54,6 +54,7 @@ export default function StartSessionForm({ locations, stakes, onSessionStarted }
         location_name: location.name,
         stakes_id: stake.id,
         stakes_label: stake.label,
+        big_blind: stake.big_blind,
         buy_in: parseFloat(buyIn),
         started_at: new Date().toISOString(),
       });

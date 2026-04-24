@@ -402,15 +402,14 @@ The session list is the player's primary audit trail. Every closed session must 
 
 **Acceptance Criteria**:
 
-- [ ] `/sessions` route renders a session history page
-- [ ] Page is reachable from primary navigation
-- [ ] Sessions are fetched from `GET /api/sessions` and displayed in date-descending order
-- [ ] Only `status: "closed"` sessions are shown (open sessions are not in this list)
-- [ ] Each row displays: date (formatted, e.g., "Apr 15, 2026"), location name, stakes label, buy-in, cash-out, P&L, duration (in hours and minutes), and rating
-- [ ] P&L is displayed in green with a "+" prefix for positive values and red with a "-" prefix for negative values; zero is neutral
-- [ ] Rating is displayed as a text label ("Good", "Neutral", "Bad") or left blank if unset
-- [ ] Empty state renders when no sessions exist, with a prompt to log the first session
-- [ ] List is scrollable; pagination or virtualization applied if session count exceeds 200
+- [x] `/sessions` route renders a session history page
+- [x] Page is reachable from primary navigation
+- [x] Sessions are fetched from `GET /api/sessions` and displayed in date-descending order
+- [x] Only `status: "closed"` sessions are shown (open sessions are not in this list)
+- [x] Each row displays: date (formatted, e.g., "Apr 15, 2026"), location name, stakes label, P&L, duration (in hours and minutes), and rating
+- [x] P&L is displayed in green with a "+" prefix for positive values and red with a "-" prefix for negative values; zero is neutral
+- [x] Empty state renders when no sessions exist, with a prompt to log the first session
+- [x] List is scrollable; pagination or virtualization applied if session count exceeds 200
 
 ---
 

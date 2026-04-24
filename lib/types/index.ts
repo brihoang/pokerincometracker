@@ -7,6 +7,7 @@ export interface Session {
   location_name: string;
   stakes_id: string;
   stakes_label: string;
+  big_blind: number | null;
   game_type: "NLH";
   buy_in: number;
   cash_out: number | null;

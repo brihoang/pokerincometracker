@@ -73,11 +73,11 @@ export default function SessionsPage() {
             {sessions.map((s) => {
               const pnl = formatPnl(s.profit_loss);
               return (
-                <li
-                  key={s.id}
-                  className="rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3"
-                >
-                  <div className="flex items-start justify-between gap-2">
+                <li key={s.id}>
+                  <Link
+                    href={`/sessions/${s.id}`}
+                    className="flex items-start justify-between gap-2 rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 hover:border-zinc-600 hover:bg-zinc-800 transition-colors"
+                  >
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-white">
                         {s.ended_at ? formatDate(s.ended_at) : "—"}
@@ -91,7 +91,7 @@ export default function SessionsPage() {
                         {pnl.text}
                       </p>
                     </div>
-                  </div>
+                  </Link>
                 </li>
               );
             })}
