@@ -1,9 +1,17 @@
-import { Session } from "@/lib/types";
+import { Session, YAxisMode } from "@/lib/types";
 
 function formatPnl(value: number): string {
   if (value > 0) return `+$${value.toFixed(2)}`;
   if (value < 0) return `-$${Math.abs(value).toFixed(2)}`;
   return "$0.00";
+}
+
+function formatBB(value: number): string {
+  const abs = Math.abs(value);
+  const formatted = abs % 1 === 0 ? abs.toFixed(0) : abs.toFixed(1);
+  if (value > 0) return `+${formatted} BB`;
+  if (value < 0) return `-${formatted} BB`;
+  return "0 BB";
 }
 
 function formatHours(mins: number): string {
@@ -37,20 +45,39 @@ function StatTile({ label, value, valueClass }: StatTileProps) {
 
 interface Props {
   sessions: Session[];
+  mode?: YAxisMode;
 }
 
-export default function StatsStrip({ sessions }: Props) {
+export default function StatsStrip({ sessions, mode = "currency" }: Props) {
   const count = sessions.length;
   const totalPnl = sessions.reduce((sum, s) => sum + (s.profit_loss ?? 0), 0);
   const totalMins = sessions.reduce((sum, s) => sum + (s.duration_mins ?? 0), 0);
   const avgPnl = count > 0 ? totalPnl / count : 0;
 
+  const totalBB = sessions.reduce((sum, s) => {
+    return sum + (s.big_blind ? (s.profit_loss ?? 0) / s.big_blind : 0);
+  }, 0);
+  const avgBB = count > 0 ? totalBB / count : 0;
+
+  const isBB = mode === "bb";
+  const pnlValue = isBB ? totalBB : totalPnl;
+  const avgValue = isBB ? avgBB : avgPnl;
+  const formatValue = isBB ? formatBB : formatPnl;
+
   return (
     <div className="mb-6 grid grid-cols-2 gap-3">
       <StatTile label="Sessions" value={String(count)} />
-      <StatTile label="Total Profit/Loss" value={count > 0 ? formatPnl(totalPnl) : "$0.00"} valueClass={count > 0 ? pnlColor(totalPnl) : "text-white"} />
+      <StatTile
+        label="Total Profit/Loss"
+        value={count > 0 ? formatValue(pnlValue) : isBB ? "0 BB" : "$0.00"}
+        valueClass={count > 0 ? pnlColor(pnlValue) : "text-white"}
+      />
       <StatTile label="Hours Played" value={totalMins > 0 ? formatHours(totalMins) : "0m"} />
-      <StatTile label="Avg Session" value={count > 0 ? formatPnl(avgPnl) : "$0.00"} valueClass={count > 0 ? pnlColor(avgPnl) : "text-white"} />
+      <StatTile
+        label="Avg Session"
+        value={count > 0 ? formatValue(avgValue) : isBB ? "0 BB" : "$0.00"}
+        valueClass={count > 0 ? pnlColor(avgValue) : "text-white"}
+      />
     </div>
   );
 }

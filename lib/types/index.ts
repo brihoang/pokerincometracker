@@ -35,6 +35,18 @@ export interface Stakes {
   updated_at: string;
 }
 
+export type YAxisMode = "currency" | "bb";
+
+export type TimeRangePreset = "all" | "last30" | "last90" | "last180" | "last365" | "custom";
+
+export interface FilterState {
+  location: string;
+  stakes: string;
+  timeRange: TimeRangePreset;
+  customStart: string | null;
+  customEnd: string | null;
+}
+
 export interface AppSettings {
   currency_symbol: "$";
   default_location_id: string | null;
