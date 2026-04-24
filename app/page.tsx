@@ -7,6 +7,7 @@ import { getLocations } from "@/lib/client/locations";
 import { getStakes } from "@/lib/client/stakes";
 import { getOpenSession, getSessions } from "@/lib/client/sessions";
 import StartSessionForm from "@/app/components/StartSessionForm";
+import OpenSessionEditor from "@/app/components/OpenSessionEditor";
 import StatsStrip from "@/app/components/StatsStrip";
 
 export default function Home() {
@@ -58,12 +59,7 @@ export default function Home() {
         </div>
 
         {openSession ? (
-          <div className="rounded-xl border border-emerald-800 bg-emerald-950 p-5 text-center">
-            <p className="text-zinc-400">A session is already in progress.</p>
-            <Link href="/sessions/close" className="mt-3 inline-block text-sm font-medium text-emerald-400 hover:text-emerald-300">
-              Close session →
-            </Link>
-          </div>
+          <OpenSessionEditor session={openSession} onSaved={setOpenSession} />
         ) : (
           <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6">
             <h2 className="mb-5 text-lg font-semibold text-white">Start Session</h2>
