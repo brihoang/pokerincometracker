@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Session } from "@/lib/types";
 import { getOpenSession } from "@/lib/client/sessions";
 
@@ -20,12 +21,12 @@ export default function OpenSessionBanner() {
         {" · "}
         {session.location_name} · {session.stakes_label} · ${session.buy_in}
       </span>
-      <a
+      <Link
         href="/sessions/close"
         className="ml-4 shrink-0 font-medium text-emerald-300 hover:text-white"
       >
         Close →
-      </a>
+      </Link>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Location, Stakes, Session, AppSettings } from "@/lib/types";
 import { createSession } from "@/lib/client/sessions";
 import { getSettings } from "@/lib/client/settings";
@@ -75,9 +76,9 @@ export default function StartSessionForm({ locations, stakes, onSessionStarted }
               ? "No locations configured."
               : "No stakes configured."}
         </p>
-        <a href="/settings" className="mt-3 inline-block text-sm font-medium text-emerald-400 hover:text-emerald-300">
+        <Link href="/settings" className="mt-3 inline-block text-sm font-medium text-emerald-400 hover:text-emerald-300">
           Go to Settings to add them →
-        </a>
+        </Link>
       </div>
     );
   }
