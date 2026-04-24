@@ -137,6 +137,7 @@ export default function StartSessionForm({ locations, stakes, onSessionStarted }
           placeholder="0.00"
           value={buyIn}
           onChange={(e) => setBuyIn(e.target.value)}
+          onWheel={(e) => e.currentTarget.blur()}
           disabled={submitting}
           className="h-11 rounded-lg border border-zinc-700 bg-zinc-800 px-3 text-white placeholder-zinc-500 disabled:opacity-50 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
         />

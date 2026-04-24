@@ -47,7 +47,10 @@ export default function Home() {
       <div className="w-full max-w-sm">
         <div className="mb-8 flex items-center justify-between">
           <h1 className="text-2xl font-bold tracking-tight text-white">Poker Tracker</h1>
-          <Link href="/settings" className="text-sm text-zinc-500 hover:text-zinc-300">Settings</Link>
+          <div className="flex items-center gap-4">
+            <Link href="/sessions" className="text-sm text-zinc-500 hover:text-zinc-300">History</Link>
+            <Link href="/settings" className="text-sm text-zinc-500 hover:text-zinc-300">Settings</Link>
+          </div>
         </div>
 
         {openSession ? (

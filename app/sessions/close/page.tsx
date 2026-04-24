@@ -41,17 +41,28 @@ export default function CloseSessionPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    Promise.all([getOpenSession(), getLocations(), getStakes()]).then(([s, locs, stks]) => {
-      if (!s) { router.replace("/"); return; }
-      setSession(s);
-      setLocations(locs);
-      setStakes(stks);
-      setLocationId(s.location_id);
-      setStakesId(s.stakes_id);
-      setBuyIn(String(s.buy_in));
-      setStartedAt(toDatetimeLocal(s.started_at));
-      setLoading(false);
-    });
+    function load() {
+      setLoading(true);
+      Promise.all([getOpenSession(), getLocations(), getStakes()]).then(([s, locs, stks]) => {
+        if (!s) { router.replace("/"); return; }
+        setSession(s);
+        setLocations(locs);
+        setStakes(stks);
+        setLocationId(s.location_id);
+        setStakesId(s.stakes_id);
+        setBuyIn(String(s.buy_in));
+        setStartedAt(toDatetimeLocal(s.started_at));
+        setLoading(false);
+      });
+    }
+
+    load();
+
+    function handlePageShow(e: PageTransitionEvent) {
+      if (e.persisted) load();
+    }
+    window.addEventListener("pageshow", handlePageShow);
+    return () => window.removeEventListener("pageshow", handlePageShow);
   }, [router]);
 
   if (loading) {
@@ -166,6 +177,7 @@ export default function CloseSessionPage() {
               required
               value={buyIn}
               onChange={(e) => setBuyIn(e.target.value)}
+              onWheel={(e) => e.currentTarget.blur()}
               className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white placeholder-zinc-500 focus:border-emerald-500 focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             />
           </div>
@@ -180,6 +192,7 @@ export default function CloseSessionPage() {
               required
               value={cashOut}
               onChange={(e) => setCashOut(e.target.value)}
+              onWheel={(e) => e.currentTarget.blur()}
               placeholder="0.00"
               className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white placeholder-zinc-500 focus:border-emerald-500 focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             />

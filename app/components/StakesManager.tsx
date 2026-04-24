@@ -49,6 +49,7 @@ function StakesForm({
             placeholder="1"
             value={sb}
             onChange={(e) => setSb(e.target.value)}
+            onWheel={(e) => e.currentTarget.blur()}
             className="h-10 w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 text-white placeholder-zinc-500 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           />
         </div>
@@ -61,6 +62,7 @@ function StakesForm({
             placeholder="2"
             value={bb}
             onChange={(e) => setBb(e.target.value)}
+            onWheel={(e) => e.currentTarget.blur()}
             className="h-10 w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 text-white placeholder-zinc-500 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           />
         </div>
