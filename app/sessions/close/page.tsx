@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Session } from "@/lib/types";
+import { Session, Location, Stakes } from "@/lib/types";
 import { getOpenSession, updateSession } from "@/lib/client/sessions";
+import { getLocations } from "@/lib/client/locations";
+import { getStakes } from "@/lib/client/stakes";
 
 type Rating = "good" | "neutral" | "bad";
 
@@ -23,8 +25,13 @@ const RATINGS: { value: Rating; label: string }[] = [
 export default function CloseSessionPage() {
   const router = useRouter();
   const [session, setSession] = useState<Session | null>(null);
+  const [locations, setLocations] = useState<Location[]>([]);
+  const [stakes, setStakes] = useState<Stakes[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const [locationId, setLocationId] = useState("");
+  const [stakesId, setStakesId] = useState("");
+  const [buyIn, setBuyIn] = useState("");
   const [cashOut, setCashOut] = useState("");
   const [startedAt, setStartedAt] = useState("");
   const [notes, setNotes] = useState("");
@@ -33,12 +40,14 @@ export default function CloseSessionPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    getOpenSession().then((s) => {
-      if (!s) {
-        router.replace("/");
-        return;
-      }
+    Promise.all([getOpenSession(), getLocations(), getStakes()]).then(([s, locs, stks]) => {
+      if (!s) { router.replace("/"); return; }
       setSession(s);
+      setLocations(locs);
+      setStakes(stks);
+      setLocationId(s.location_id);
+      setStakesId(s.stakes_id);
+      setBuyIn(String(s.buy_in));
       setStartedAt(toDatetimeLocal(s.started_at));
       setLoading(false);
     });
@@ -72,9 +81,23 @@ export default function CloseSessionPage() {
       return;
     }
 
+    const buyInNum = parseFloat(buyIn);
+    if (isNaN(buyInNum) || buyInNum <= 0) {
+      setError("Buy-in must be a valid amount greater than 0.");
+      return;
+    }
+
+    const location = locations.find((l) => l.id === locationId);
+    const stake = stakes.find((s) => s.id === stakesId);
+
     setSubmitting(true);
     try {
       await updateSession(session!.id, {
+        location_id: locationId,
+        location_name: location?.name ?? session!.location_name,
+        stakes_id: stakesId,
+        stakes_label: stake?.label ?? session!.stakes_label,
+        buy_in: buyInNum,
         cash_out: cashOutNum,
         ended_at: endedAt,
         started_at: startedAtISO,
@@ -82,7 +105,7 @@ export default function CloseSessionPage() {
         rating,
         status: "closed",
       });
-      router.push("/");
+      window.location.href = "/";
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
       setSubmitting(false);
@@ -90,52 +113,83 @@ export default function CloseSessionPage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center bg-zinc-950 px-4 py-12">
+    <main className="flex min-h-screen flex-col items-center overflow-x-hidden bg-zinc-950 px-4 py-12">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex items-center justify-between">
           <h1 className="text-2xl font-bold tracking-tight text-white">Close Session</h1>
           <Link href="/" className="text-sm text-zinc-500 hover:text-zinc-300">Cancel</Link>
         </div>
 
-        <div className="mb-5 rounded-xl border border-zinc-800 bg-zinc-900 p-4">
-          <p className="text-sm text-zinc-400">
-            {session.location_name} · {session.stakes_label} · ${session.buy_in} buy-in
-          </p>
-        </div>
-
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label htmlFor="cashOut" className="mb-1.5 block text-sm font-medium text-zinc-300">
-              Cash-out amount
-            </label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400">$</span>
-              <input
-                id="cashOut"
-                type="number"
-                min="0"
-                step="0.01"
-                required
-                value={cashOut}
-                onChange={(e) => setCashOut(e.target.value)}
-                placeholder="0.00"
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 py-3 pl-7 pr-4 text-white placeholder-zinc-500 focus:border-emerald-500 focus:outline-none"
-              />
-            </div>
+            <label htmlFor="location" className="mb-1.5 block text-sm font-medium text-zinc-300">Location</label>
+            <select
+              id="location"
+              value={locationId}
+              onChange={(e) => setLocationId(e.target.value)}
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white focus:border-emerald-500 focus:outline-none"
+            >
+              {locations.map((l) => (
+                <option key={l.id} value={l.id}>{l.name}</option>
+              ))}
+            </select>
           </div>
 
           <div>
-            <label htmlFor="startedAt" className="mb-1.5 block text-sm font-medium text-zinc-300">
-              Start time
-            </label>
-            <input
-              id="startedAt"
-              type="datetime-local"
-              required
-              value={startedAt}
-              onChange={(e) => setStartedAt(e.target.value)}
+            <label htmlFor="stakes" className="mb-1.5 block text-sm font-medium text-zinc-300">Stakes</label>
+            <select
+              id="stakes"
+              value={stakesId}
+              onChange={(e) => setStakesId(e.target.value)}
               className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white focus:border-emerald-500 focus:outline-none"
+            >
+              {stakes.map((s) => (
+                <option key={s.id} value={s.id}>{s.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="buyIn" className="mb-1.5 block text-sm font-medium text-zinc-300">Buy-in ($)</label>
+            <input
+              id="buyIn"
+              type="number"
+              min="0.01"
+              step="0.01"
+              required
+              value={buyIn}
+              onChange={(e) => setBuyIn(e.target.value)}
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white placeholder-zinc-500 focus:border-emerald-500 focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             />
+          </div>
+
+          <div>
+            <label htmlFor="cashOut" className="mb-1.5 block text-sm font-medium text-zinc-300">Cash-out ($)</label>
+            <input
+              id="cashOut"
+              type="number"
+              min="0"
+              step="0.01"
+              required
+              value={cashOut}
+              onChange={(e) => setCashOut(e.target.value)}
+              placeholder="0.00"
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white placeholder-zinc-500 focus:border-emerald-500 focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="startedAt" className="mb-1.5 block text-sm font-medium text-zinc-300">Start time</label>
+            <div className="overflow-hidden rounded-lg border border-zinc-700 bg-zinc-800 focus-within:border-emerald-500">
+              <input
+                id="startedAt"
+                type="datetime-local"
+                required
+                value={startedAt}
+                onChange={(e) => setStartedAt(e.target.value)}
+                className="w-full bg-transparent px-4 py-3 text-sm text-white outline-none"
+              />
+            </div>
           </div>
 
           <div>

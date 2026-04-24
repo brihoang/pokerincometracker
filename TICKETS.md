@@ -171,20 +171,20 @@ Centralize all business logic calculations so they can be reused by API routes a
 Connect the stub routes to the real repository so session data persists and can be retrieved.
 
 **Acceptance Criteria**:
-- [ ] `GET /api/sessions` returns all sessions from `SessionRepository.getAll()` as JSON
-- [ ] `POST /api/sessions` accepts `{ location_id, location_name, stakes_id, stakes_label, buy_in, started_at }`, validates required fields, creates a session with `status: "open"` and `game_type: "NLH"`, and returns the created session with `201`
-- [ ] Missing required fields return `400` with a descriptive error message
-- [ ] `GET /api/sessions?status=open` filters to return only the open session (or empty array)
+- [x] `GET /api/sessions` returns all sessions from `SessionRepository.getAll()` as JSON
+- [x] `POST /api/sessions` accepts `{ location_id, location_name, stakes_id, stakes_label, buy_in, started_at }`, validates required fields, creates a session with `status: "open"` and `game_type: "NLH"`, and returns the created session with `201`
+- [x] Missing required fields return `400` with a descriptive error message
+- [x] `GET /api/sessions?status=open` filters to return only the open session (or empty array)
 
 ---
 
 ### M2-02 — Wire GET, PUT, DELETE /api/sessions/[id] to SessionRepository
 
 **Acceptance Criteria**:
-- [ ] `GET /api/sessions/[id]` returns the session or `404` if not found
-- [ ] `PUT /api/sessions/[id]` accepts a partial session payload, merges it, and returns the updated session
-- [ ] `DELETE /api/sessions/[id]` removes the session and returns `204`
-- [ ] All routes return `404` with a clear message if the ID does not exist
+- [x] `GET /api/sessions/[id]` returns the session or `404` if not found
+- [x] `PUT /api/sessions/[id]` accepts a partial session payload, merges it, and returns the updated session
+- [x] `DELETE /api/sessions/[id]` removes the session and returns `204`
+- [x] All routes return `404` with a clear message if the ID does not exist
 
 ---
 
@@ -193,9 +193,9 @@ Connect the stub routes to the real repository so session data persists and can 
 The Start Session form depends on these lists being available. Wire them before building the UI.
 
 **Acceptance Criteria**:
-- [ ] `GET /api/locations` returns `Location[]` from `LocationRepository.getAll()`
-- [ ] `GET /api/stakes` returns `Stakes[]` from `StakesRepository.getAll()`
-- [ ] Both return `200` with an empty array when no data exists (no 404 or 500)
+- [x] `GET /api/locations` returns `Location[]` from `LocationRepository.getAll()`
+- [x] `GET /api/stakes` returns `Stakes[]` from `StakesRepository.getAll()`
+- [x] Both return `200` with an empty array when no data exists (no 404 or 500)
 
 ---
 
@@ -204,15 +204,15 @@ The Start Session form depends on these lists being available. Wire them before 
 The primary action in the app. The player selects a location, selects stakes, enters a buy-in, and taps "Start Session." The session is created with the current timestamp.
 
 **Acceptance Criteria**:
-- [ ] Form renders on the home/dashboard page, accessible within one tap
-- [ ] Location field is a dropdown populated from `GET /api/locations`
-- [ ] Stakes field is a dropdown populated from `GET /api/stakes`
-- [ ] Buy-in field is a numeric input (decimal, USD, minimum value `0.01`)
-- [ ] "Start Session" button submits to `POST /api/sessions` with the current client timestamp as `started_at`
-- [ ] On success, UI transitions to the "session in progress" state without a full page reload
-- [ ] If either locations or stakes list is empty, a visible prompt guides the user to add them in Settings before they can start
-- [ ] Form validates that all three fields are filled before submission
-- [ ] "Start Session" button is **disabled** (not hidden) when a session with `status: "open"` already exists
+- [x] Form renders on the home/dashboard page, accessible within one tap
+- [x] Location field is a dropdown populated from `GET /api/locations`
+- [x] Stakes field is a dropdown populated from `GET /api/stakes`
+- [x] Buy-in field is a numeric input (decimal, USD, minimum value `0.01`)
+- [x] "Start Session" button submits to `POST /api/sessions` with the current client timestamp as `started_at`
+- [x] On success, UI transitions to the "session in progress" state without a full page reload
+- [x] If either locations or stakes list is empty, a visible prompt guides the user to add them in Settings before they can start
+- [x] Form validates that all three fields are filled before submission
+- [x] "Start Session" button is **disabled** (not hidden) when a session with `status: "open"` already exists
 
 ---
 
@@ -234,11 +234,11 @@ Players who always play the same game should be able to fill the form in one tap
 If the player navigates away or refreshes the browser while a session is open, the app must recover the in-progress session on next load.
 
 **Acceptance Criteria**:
-- [ ] On app load (and on every route navigation), the app calls `GET /api/sessions?status=open`
-- [ ] If an open session is found, a persistent banner/indicator is displayed on every page showing the session is in progress (location, stakes, elapsed time at time of page load is acceptable — no live timer required)
-- [ ] The banner includes a link/button to navigate to the Close Session flow
-- [ ] Refreshing the page while a session is open preserves the banner state
-- [ ] If no open session exists, the banner is not rendered
+- [x] On app load (and on every route navigation), the app calls `GET /api/sessions?status=open`
+- [x] If an open session is found, a persistent banner/indicator is displayed on every page showing the session is in progress (location, stakes, elapsed time at time of page load is acceptable — no live timer required)
+- [x] The banner includes a link/button to navigate to the Close Session flow
+- [x] Refreshing the page while a session is open preserves the banner state
+- [x] If no open session exists, the banner is not rendered
 
 ---
 
@@ -247,15 +247,15 @@ If the player navigates away or refreshes the browser while a session is open, t
 The player enters their cash-out amount, optionally adjusts the start time, adds notes, and optionally sets a rating to close the session.
 
 **Acceptance Criteria**:
-- [ ] Close Session screen is reachable from the open session banner
-- [ ] Cash-out amount field is required (numeric, decimal, minimum `0`)
-- [ ] Start time field is pre-filled with `started_at` from the open session and is editable (date + time picker or text input in ISO format)
-- [ ] Notes field is optional free-text (textarea, no character limit enforcement in V1)
-- [ ] Rating field is optional — renders as three selectable options: Good, Neutral, Bad. No option is selected by default
-- [ ] "Close Session" CTA submits a `PUT /api/sessions/[id]` with `cash_out`, `ended_at` (current timestamp), adjusted `started_at`, `notes`, `rating`, and `status: "closed"`
-- [ ] On submit, the API route computes and stores `profit_loss` and `duration_mins` using the calculation utilities
-- [ ] On success, the open session banner is dismissed and the UI returns to the home/dashboard state
-- [ ] Form validates that `ended_at` is after `started_at` and surfaces an inline error if not
+- [x] Close Session screen is reachable from the open session banner
+- [x] Cash-out amount field is required (numeric, decimal, minimum `0`)
+- [x] Start time field is pre-filled with `started_at` from the open session and is editable (date + time picker or text input in ISO format)
+- [x] Notes field is optional free-text (textarea, no character limit enforcement in V1)
+- [x] Rating field is optional — renders as three selectable options: Good, Neutral, Bad. No option is selected by default
+- [x] "Close Session" CTA submits a `PUT /api/sessions/[id]` with `cash_out`, `ended_at` (current timestamp), adjusted `started_at`, `notes`, `rating`, and `status: "closed"`
+- [x] On submit, the API route computes and stores `profit_loss` and `duration_mins` using the calculation utilities
+- [x] On success, the open session banner is dismissed and the UI returns to the home/dashboard state
+- [x] Form validates that `ended_at` is after `started_at` and surfaces an inline error if not
 
 ---
 
@@ -282,20 +282,20 @@ Protect against accidental session closes where the player may have forgotten to
 ### M3-01 — Wire all Location API routes to LocationRepository
 
 **Acceptance Criteria**:
-- [ ] `POST /api/locations` accepts `{ name }`, validates non-empty, creates and returns the location with `201`
-- [ ] `PUT /api/locations/[id]` accepts `{ name }`, updates and returns the location, or `404` if not found
-- [ ] `DELETE /api/locations/[id]` removes the location and returns `204`, or `404` if not found
-- [ ] Attempting to create a location with a duplicate name returns `409` with a clear error message
+- [x] `POST /api/locations` accepts `{ name }`, validates non-empty, creates and returns the location with `201`
+- [x] `PUT /api/locations/[id]` accepts `{ name }`, updates and returns the location, or `404` if not found
+- [x] `DELETE /api/locations/[id]` removes the location and returns `204`, or `404` if not found
+- [x] Attempting to create a location with a duplicate name returns `409` with a clear error message
 
 ---
 
 ### M3-02 — Wire all Stakes API routes to StakesRepository
 
 **Acceptance Criteria**:
-- [ ] `POST /api/stakes` accepts `{ label, small_blind?, big_blind? }`, validates non-empty label, creates and returns the stakes entry with `201`
-- [ ] `PUT /api/stakes/[id]` accepts `{ label, small_blind?, big_blind? }`, updates and returns, or `404`
-- [ ] `DELETE /api/stakes/[id]` removes the entry and returns `204`, or `404`
-- [ ] Attempting to create a stakes entry with a duplicate label returns `409`
+- [x] `POST /api/stakes` accepts `{ label, small_blind?, big_blind? }`, validates non-empty label, creates and returns the stakes entry with `201`
+- [x] `PUT /api/stakes/[id]` accepts `{ label, small_blind?, big_blind? }`, updates and returns, or `404`
+- [x] `DELETE /api/stakes/[id]` removes the entry and returns `204`, or `404`
+- [x] Attempting to create a stakes entry with a duplicate label returns `409`
 
 ---
 
@@ -304,10 +304,10 @@ Protect against accidental session closes where the player may have forgotten to
 The Settings page is the container for Locations management, Stakes management, and App Settings. It must exist before the sub-sections are built.
 
 **Acceptance Criteria**:
-- [ ] A `/settings` route renders a Settings page
-- [ ] Settings is reachable from the primary navigation (bottom nav or header link)
-- [ ] Page has clearly labeled sections or tabs for: Locations, Stakes, App Settings
-- [ ] Page is mobile-friendly with 44px minimum tap targets
+- [x] A `/settings` route renders a Settings page
+- [x] Settings is reachable from the primary navigation (bottom nav or header link)
+- [x] Page has clearly labeled sections or tabs for: Locations, Stakes, App Settings
+- [x] Page is mobile-friendly with 44px minimum tap targets
 
 ---
 
@@ -316,27 +316,27 @@ The Settings page is the container for Locations management, Stakes management, 
 Players must be able to add, rename, and delete their saved venues.
 
 **Acceptance Criteria**:
-- [ ] Locations section lists all saved locations from `GET /api/locations`
-- [ ] "Add Location" action opens an inline form or modal with a name text input
-- [ ] Submitting the form calls `POST /api/locations` and refreshes the list on success
-- [ ] Each location row has an Edit action that allows renaming via inline edit or modal, calling `PUT /api/locations/[id]`
-- [ ] Each location row has a Delete action that calls `DELETE /api/locations/[id]`
-- [ ] Before deleting a location that is referenced by one or more sessions (check via `GET /api/sessions`), display a warning: "This location is used by X session(s). Deleting it will not affect those sessions." User must confirm before proceeding
-- [ ] Empty state renders a prompt when no locations exist
-- [ ] All actions optimistically update the list or re-fetch on completion
+- [x] Locations section lists all saved locations from `GET /api/locations`
+- [x] "Add Location" action opens an inline form or modal with a name text input
+- [x] Submitting the form calls `POST /api/locations` and refreshes the list on success
+- [x] Each location row has an Edit action that allows renaming via inline edit or modal, calling `PUT /api/locations/[id]`
+- [x] Each location row has a Delete action that calls `DELETE /api/locations/[id]`
+- [x] Before deleting a location that is referenced by one or more sessions (check via `GET /api/sessions`), display a warning: "This location is used by X session(s). Deleting it will not affect those sessions." User must confirm before proceeding
+- [x] Empty state renders a prompt when no locations exist
+- [x] All actions optimistically update the list or re-fetch on completion
 
 ---
 
 ### M3-05 — Build Stakes management UI
 
 **Acceptance Criteria**:
-- [ ] Stakes section lists all saved stakes from `GET /api/stakes`
-- [ ] "Add Stakes" action opens an inline form or modal with: label (required), small blind (optional), big blind (optional)
-- [ ] Submitting calls `POST /api/stakes` and refreshes the list on success
-- [ ] Each stakes row has an Edit action calling `PUT /api/stakes/[id]`
-- [ ] Each stakes row has a Delete action calling `DELETE /api/stakes/[id]`
-- [ ] Before deleting a stakes entry referenced by one or more sessions, display a warning similar to M3-04 — confirm before proceeding
-- [ ] Empty state renders a prompt when no stakes exist
+- [x] Stakes section lists all saved stakes from `GET /api/stakes`
+- [x] "Add Stakes" action opens an inline form or modal with: label (required), small blind (optional), big blind (optional)
+- [x] Submitting calls `POST /api/stakes` and refreshes the list on success
+- [x] Each stakes row has an Edit action calling `PUT /api/stakes/[id]`
+- [x] Each stakes row has a Delete action calling `DELETE /api/stakes/[id]`
+- [x] Before deleting a stakes entry referenced by one or more sessions, display a warning similar to M3-04 — confirm before proceeding
+- [x] Empty state renders a prompt when no stakes exist
 
 ---
 

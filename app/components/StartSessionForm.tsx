@@ -57,6 +57,7 @@ export default function StartSessionForm({ locations, stakes, onSessionStarted }
         started_at: new Date().toISOString(),
       });
       onSessionStarted(session);
+      window.location.href = "/";
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {
