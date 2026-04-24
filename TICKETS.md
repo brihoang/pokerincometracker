@@ -19,11 +19,11 @@ Tickets are organized by milestone. Complete M1 fully before starting M2; within
 Set up the base project so every subsequent ticket has a clean, configured environment to build on. This includes installing dependencies, configuring Tailwind, and verifying a blank app runs locally.
 
 **Acceptance Criteria**:
-- [ ] `npx create-next-app` scaffolded with App Router, TypeScript, and Tailwind CSS
-- [ ] `npm run dev` starts without errors
-- [ ] A placeholder home page renders at `localhost:3000`
-- [ ] Tailwind utility classes apply correctly to a test element (e.g., a colored div)
-- [ ] ESLint configured and passes with no errors on the initial scaffold
+- [x] `npx create-next-app` scaffolded with App Router, TypeScript, and Tailwind CSS
+- [x] `npm run dev` starts without errors
+- [x] A placeholder home page renders at `localhost:3000`
+- [x] Tailwind utility classes apply correctly to a test element (e.g., a colored div)
+- [x] ESLint configured and passes with no errors on the initial scaffold
 
 ---
 
@@ -32,16 +32,16 @@ Set up the base project so every subsequent ticket has a clean, configured envir
 Create a single source of truth for the shape of every data entity used across the app. Typed interfaces prevent drift between the repository layer, API routes, and UI components.
 
 **Acceptance Criteria**:
-- [ ] `/lib/types/index.ts` exists and exports the following interfaces: `Session`, `Location`, `Stakes`, `AppSettings`
-- [ ] `Session` includes: `id`, `started_at`, `ended_at`, `duration_mins`, `location_id`, `location_name`, `stakes_id`, `stakes_label`, `game_type`, `buy_in`, `cash_out`, `profit_loss`, `notes`, `rating`, `status`, `created_at`, `updated_at`
-- [ ] `rating` typed as `"good" | "neutral" | "bad" | null`
-- [ ] `status` typed as `"open" | "closed"`
-- [ ] `game_type` typed as `"NLH"` (literal type)
-- [ ] `Location` includes: `id`, `name`, `created_at`, `updated_at`
-- [ ] `Stakes` includes: `id`, `label`, `small_blind`, `big_blind`, `created_at`, `updated_at`
-- [ ] `AppSettings` includes: `currency_symbol` (typed as `"$"`), `default_location_id`, `default_stakes_id`
-- [ ] All nullable fields are typed as `X | null`, not `X | undefined`
-- [ ] No `any` types
+- [x] `/lib/types/index.ts` exists and exports the following interfaces: `Session`, `Location`, `Stakes`, `AppSettings`
+- [x] `Session` includes: `id`, `started_at`, `ended_at`, `duration_mins`, `location_id`, `location_name`, `stakes_id`, `stakes_label`, `game_type`, `buy_in`, `cash_out`, `profit_loss`, `notes`, `rating`, `status`, `created_at`, `updated_at`
+- [x] `rating` typed as `"good" | "neutral" | "bad" | null`
+- [x] `status` typed as `"open" | "closed"`
+- [x] `game_type` typed as `"NLH"` (literal type)
+- [x] `Location` includes: `id`, `name`, `created_at`, `updated_at`
+- [x] `Stakes` includes: `id`, `label`, `small_blind`, `big_blind`, `created_at`, `updated_at`
+- [x] `AppSettings` includes: `currency_symbol` (typed as `"$"`), `default_location_id`, `default_stakes_id`
+- [x] All nullable fields are typed as `X | null`, not `X | undefined`
+- [x] No `any` types
 
 ---
 
@@ -50,9 +50,9 @@ Create a single source of truth for the shape of every data entity used across t
 All entity IDs must be UUIDs from day one so the data model is compatible with both localStorage and a future PostgreSQL migration without ID collisions.
 
 **Acceptance Criteria**:
-- [ ] `/lib/utils/uuid.ts` exports a `generateId()` function that returns a valid UUID v4 string
-- [ ] Function works in both server (Node.js) and client (browser) contexts
-- [ ] A unit test or manual smoke test confirms the output format matches UUID v4 pattern
+- [x] `/lib/utils/uuid.ts` exports a `generateId()` function that returns a valid UUID v4 string
+- [x] Function works in both server (Node.js) and client (browser) contexts
+- [x] A unit test or manual smoke test confirms the output format matches UUID v4 pattern
 
 ---
 
@@ -61,11 +61,11 @@ All entity IDs must be UUIDs from day one so the data model is compatible with b
 Create the low-level read/write helpers that all repository modules will use. Abstracting this prevents localStorage key typos and centralizes the JSON serialization boundary.
 
 **Acceptance Criteria**:
-- [ ] `/lib/storage/localStorage.ts` exports typed `getItem<T>(key: string): T | null` and `setItem<T>(key: string, value: T): void` helpers
-- [ ] Storage keys are defined as constants: `PIT_SESSIONS`, `PIT_LOCATIONS`, `PIT_STAKES`, `PIT_SETTINGS`
-- [ ] Reads return `null` (not throw) if the key does not exist
-- [ ] Writes serialize to JSON; reads parse from JSON
-- [ ] Functions are safe to import in API route context (should not throw if `window` is unavailable — guard with `typeof window !== "undefined"`)
+- [x] `/lib/storage/localStorage.ts` exports typed `getItem<T>(key: string): T | null` and `setItem<T>(key: string, value: T): void` helpers
+- [x] Storage keys are defined as constants: `PIT_SESSIONS`, `PIT_LOCATIONS`, `PIT_STAKES`, `PIT_SETTINGS`
+- [x] Reads return `null` (not throw) if the key does not exist
+- [x] Writes serialize to JSON; reads parse from JSON
+- [x] Functions are safe to import in API route context (should not throw if `window` is unavailable — guard with `typeof window !== "undefined"`)
 
 ---
 
@@ -74,43 +74,43 @@ Create the low-level read/write helpers that all repository modules will use. Ab
 The repository is the only layer that reads or writes session data. All API routes call the repository — never localStorage directly.
 
 **Acceptance Criteria**:
-- [ ] `/lib/repositories/sessions.ts` exports a `SessionRepository` object or class with the following methods: `getAll()`, `getById(id)`, `create(data)`, `update(id, data)`, `delete(id)`, `getOpen()`
-- [ ] `getAll()` returns `Session[]` sorted by `started_at` descending
-- [ ] `getOpen()` returns the single open session or `null`
-- [ ] `create()` assigns a UUID, sets `created_at` and `updated_at`, and persists via the localStorage adapter
-- [ ] `update()` merges partial fields and updates `updated_at`
-- [ ] `delete()` removes the entry by ID
-- [ ] All methods operate on the `PIT_SESSIONS` key
+- [x] `/lib/repositories/sessions.ts` exports a `SessionRepository` object or class with the following methods: `getAll()`, `getById(id)`, `create(data)`, `update(id, data)`, `delete(id)`, `getOpen()`
+- [x] `getAll()` returns `Session[]` sorted by `started_at` descending
+- [x] `getOpen()` returns the single open session or `null`
+- [x] `create()` assigns a UUID, sets `created_at` and `updated_at`, and persists via the localStorage adapter
+- [x] `update()` merges partial fields and updates `updated_at`
+- [x] `delete()` removes the entry by ID
+- [x] All methods operate on the `PIT_SESSIONS` key
 
 ---
 
 ### M1-06 — Implement LocationRepository with localStorage adapter
 
 **Acceptance Criteria**:
-- [ ] `/lib/repositories/locations.ts` exports a `LocationRepository` with: `getAll()`, `getById(id)`, `create(data)`, `update(id, data)`, `delete(id)`
-- [ ] `getAll()` returns `Location[]` sorted alphabetically by `name`
-- [ ] `create()` validates that `name` is non-empty before persisting
-- [ ] All methods operate on the `PIT_LOCATIONS` key
+- [x] `/lib/repositories/locations.ts` exports a `LocationRepository` with: `getAll()`, `getById(id)`, `create(data)`, `update(id, data)`, `delete(id)`
+- [x] `getAll()` returns `Location[]` sorted alphabetically by `name`
+- [x] `create()` validates that `name` is non-empty before persisting
+- [x] All methods operate on the `PIT_LOCATIONS` key
 
 ---
 
 ### M1-07 — Implement StakesRepository with localStorage adapter
 
 **Acceptance Criteria**:
-- [ ] `/lib/repositories/stakes.ts` exports a `StakesRepository` with: `getAll()`, `getById(id)`, `create(data)`, `update(id, data)`, `delete(id)`
-- [ ] `getAll()` returns `Stakes[]` sorted by `small_blind` ascending (nulls last), then alphabetically by `label`
-- [ ] `create()` validates that `label` is non-empty before persisting
-- [ ] All methods operate on the `PIT_STAKES` key
+- [x] `/lib/repositories/stakes.ts` exports a `StakesRepository` with: `getAll()`, `getById(id)`, `create(data)`, `update(id, data)`, `delete(id)`
+- [x] `getAll()` returns `Stakes[]` sorted by `small_blind` ascending (nulls last), then alphabetically by `label`
+- [x] `create()` validates that `label` is non-empty before persisting
+- [x] All methods operate on the `PIT_STAKES` key
 
 ---
 
 ### M1-08 — Implement AppSettingsRepository with localStorage adapter
 
 **Acceptance Criteria**:
-- [ ] `/lib/repositories/settings.ts` exports a `SettingsRepository` with: `get()`, `update(data)`
-- [ ] `get()` returns the stored `AppSettings` or a default object (`{ currency_symbol: "$", default_location_id: null, default_stakes_id: null }`) if nothing is stored
-- [ ] `update()` merges partial fields and persists
-- [ ] Operates on the `PIT_SETTINGS` key
+- [x] `/lib/repositories/settings.ts` exports a `SettingsRepository` with: `get()`, `update(data)`
+- [x] `get()` returns the stored `AppSettings` or a default object (`{ currency_symbol: "$", default_location_id: null, default_stakes_id: null }`) if nothing is stored
+- [x] `update()` merges partial fields and persists
+- [x] Operates on the `PIT_SETTINGS` key
 
 ---
 
@@ -119,7 +119,7 @@ The repository is the only layer that reads or writes session data. All API rout
 Create all route files so the folder structure is established and imports resolve correctly. Routes return mock/empty responses at this stage — they are wired to real repositories in later milestones.
 
 **Acceptance Criteria**:
-- [ ] The following route files exist and return `200 OK` with an empty array or object:
+- [x] The following route files exist and return `200 OK` with an empty array or object:
   - `GET /api/sessions`
   - `POST /api/sessions`
   - `GET /api/sessions/[id]`
@@ -139,8 +139,8 @@ Create all route files so the folder structure is established and imports resolv
   - `PUT /api/settings`
   - `GET /api/export`
   - `POST /api/import`
-- [ ] All routes use Next.js App Router `route.ts` convention
-- [ ] No route imports directly from localStorage — all are stubbed with inline placeholder returns for now
+- [x] All routes use Next.js App Router `route.ts` convention
+- [x] No route imports directly from localStorage — all are stubbed with inline placeholder returns for now
 
 ---
 
