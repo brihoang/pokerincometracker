@@ -34,6 +34,7 @@ export default function CloseSessionPage() {
   const [buyIn, setBuyIn] = useState("");
   const [cashOut, setCashOut] = useState("");
   const [startedAt, setStartedAt] = useState("");
+  const [endedAt, setEndedAt] = useState(() => toDatetimeLocal(new Date().toISOString()));
   const [notes, setNotes] = useState("");
   const [rating, setRating] = useState<Rating | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -63,14 +64,20 @@ export default function CloseSessionPage() {
 
   if (!session) return null;
 
+  const sessionMins =
+    startedAt && endedAt
+      ? Math.floor((new Date(endedAt).getTime() - new Date(startedAt).getTime()) / 60000)
+      : null;
+  const showShortWarning = sessionMins !== null && sessionMins >= 0 && sessionMins < 15;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
 
-    const endedAt = new Date().toISOString();
+    const endedAtISO = new Date(endedAt).toISOString();
     const startedAtISO = new Date(startedAt).toISOString();
 
-    if (new Date(endedAt) <= new Date(startedAtISO)) {
+    if (new Date(endedAtISO) <= new Date(startedAtISO)) {
       setError("End time must be after start time.");
       return;
     }
@@ -99,7 +106,7 @@ export default function CloseSessionPage() {
         stakes_label: stake?.label ?? session!.stakes_label,
         buy_in: buyInNum,
         cash_out: cashOutNum,
-        ended_at: endedAt,
+        ended_at: endedAtISO,
         started_at: startedAtISO,
         notes: notes.trim() || null,
         rating,
@@ -193,6 +200,20 @@ export default function CloseSessionPage() {
           </div>
 
           <div>
+            <label htmlFor="endedAt" className="mb-1.5 block text-sm font-medium text-zinc-300">End time</label>
+            <div className="overflow-hidden rounded-lg border border-zinc-700 bg-zinc-800 focus-within:border-emerald-500">
+              <input
+                id="endedAt"
+                type="datetime-local"
+                required
+                value={endedAt}
+                onChange={(e) => setEndedAt(e.target.value)}
+                className="w-full bg-transparent px-4 py-3 text-sm text-white outline-none"
+              />
+            </div>
+          </div>
+
+          <div>
             <label htmlFor="notes" className="mb-1.5 block text-sm font-medium text-zinc-300">
               Notes <span className="text-zinc-500">(optional)</span>
             </label>
@@ -227,6 +248,12 @@ export default function CloseSessionPage() {
               ))}
             </div>
           </div>
+
+          {showShortWarning && (
+            <p className="rounded-lg border border-yellow-700 bg-yellow-950 px-4 py-3 text-sm text-yellow-400">
+              This session is only {sessionMins} {sessionMins === 1 ? "minute" : "minutes"} long — are you sure?
+            </p>
+          )}
 
           {error && (
             <p className="rounded-lg border border-red-800 bg-red-950 px-4 py-3 text-sm text-red-400">

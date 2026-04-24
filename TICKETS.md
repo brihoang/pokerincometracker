@@ -19,6 +19,7 @@ Tickets are organized by milestone. Complete M1 fully before starting M2; within
 Set up the base project so every subsequent ticket has a clean, configured environment to build on. This includes installing dependencies, configuring Tailwind, and verifying a blank app runs locally.
 
 **Acceptance Criteria**:
+
 - [x] `npx create-next-app` scaffolded with App Router, TypeScript, and Tailwind CSS
 - [x] `npm run dev` starts without errors
 - [x] A placeholder home page renders at `localhost:3000`
@@ -32,6 +33,7 @@ Set up the base project so every subsequent ticket has a clean, configured envir
 Create a single source of truth for the shape of every data entity used across the app. Typed interfaces prevent drift between the repository layer, API routes, and UI components.
 
 **Acceptance Criteria**:
+
 - [x] `/lib/types/index.ts` exists and exports the following interfaces: `Session`, `Location`, `Stakes`, `AppSettings`
 - [x] `Session` includes: `id`, `started_at`, `ended_at`, `duration_mins`, `location_id`, `location_name`, `stakes_id`, `stakes_label`, `game_type`, `buy_in`, `cash_out`, `profit_loss`, `notes`, `rating`, `status`, `created_at`, `updated_at`
 - [x] `rating` typed as `"good" | "neutral" | "bad" | null`
@@ -50,6 +52,7 @@ Create a single source of truth for the shape of every data entity used across t
 All entity IDs must be UUIDs from day one so the data model is compatible with both localStorage and a future PostgreSQL migration without ID collisions.
 
 **Acceptance Criteria**:
+
 - [x] `/lib/utils/uuid.ts` exports a `generateId()` function that returns a valid UUID v4 string
 - [x] Function works in both server (Node.js) and client (browser) contexts
 - [x] A unit test or manual smoke test confirms the output format matches UUID v4 pattern
@@ -61,6 +64,7 @@ All entity IDs must be UUIDs from day one so the data model is compatible with b
 Create the low-level read/write helpers that all repository modules will use. Abstracting this prevents localStorage key typos and centralizes the JSON serialization boundary.
 
 **Acceptance Criteria**:
+
 - [x] `/lib/storage/localStorage.ts` exports typed `getItem<T>(key: string): T | null` and `setItem<T>(key: string, value: T): void` helpers
 - [x] Storage keys are defined as constants: `PIT_SESSIONS`, `PIT_LOCATIONS`, `PIT_STAKES`, `PIT_SETTINGS`
 - [x] Reads return `null` (not throw) if the key does not exist
@@ -74,6 +78,7 @@ Create the low-level read/write helpers that all repository modules will use. Ab
 The repository is the only layer that reads or writes session data. All API routes call the repository — never localStorage directly.
 
 **Acceptance Criteria**:
+
 - [x] `/lib/repositories/sessions.ts` exports a `SessionRepository` object or class with the following methods: `getAll()`, `getById(id)`, `create(data)`, `update(id, data)`, `delete(id)`, `getOpen()`
 - [x] `getAll()` returns `Session[]` sorted by `started_at` descending
 - [x] `getOpen()` returns the single open session or `null`
@@ -87,6 +92,7 @@ The repository is the only layer that reads or writes session data. All API rout
 ### M1-06 — Implement LocationRepository with localStorage adapter
 
 **Acceptance Criteria**:
+
 - [x] `/lib/repositories/locations.ts` exports a `LocationRepository` with: `getAll()`, `getById(id)`, `create(data)`, `update(id, data)`, `delete(id)`
 - [x] `getAll()` returns `Location[]` sorted alphabetically by `name`
 - [x] `create()` validates that `name` is non-empty before persisting
@@ -97,6 +103,7 @@ The repository is the only layer that reads or writes session data. All API rout
 ### M1-07 — Implement StakesRepository with localStorage adapter
 
 **Acceptance Criteria**:
+
 - [x] `/lib/repositories/stakes.ts` exports a `StakesRepository` with: `getAll()`, `getById(id)`, `create(data)`, `update(id, data)`, `delete(id)`
 - [x] `getAll()` returns `Stakes[]` sorted by `small_blind` ascending (nulls last), then alphabetically by `label`
 - [x] `create()` validates that `label` is non-empty before persisting
@@ -107,6 +114,7 @@ The repository is the only layer that reads or writes session data. All API rout
 ### M1-08 — Implement AppSettingsRepository with localStorage adapter
 
 **Acceptance Criteria**:
+
 - [x] `/lib/repositories/settings.ts` exports a `SettingsRepository` with: `get()`, `update(data)`
 - [x] `get()` returns the stored `AppSettings` or a default object (`{ currency_symbol: "$", default_location_id: null, default_stakes_id: null }`) if nothing is stored
 - [x] `update()` merges partial fields and persists
@@ -119,6 +127,7 @@ The repository is the only layer that reads or writes session data. All API rout
 Create all route files so the folder structure is established and imports resolve correctly. Routes return mock/empty responses at this stage — they are wired to real repositories in later milestones.
 
 **Acceptance Criteria**:
+
 - [x] The following route files exist and return `200 OK` with an empty array or object:
   - `GET /api/sessions`
   - `POST /api/sessions`
@@ -149,12 +158,13 @@ Create all route files so the folder structure is established and imports resolv
 Centralize all business logic calculations so they can be reused by API routes and tested independently.
 
 **Acceptance Criteria**:
-- [ ] `/lib/utils/calculations.ts` exports:
+
+- [x] `/lib/utils/calculations.ts` exports:
   - `calcProfitLoss(buyIn: number, cashOut: number): number` — returns `cashOut - buyIn`
   - `calcDurationMins(startedAt: Date, endedAt: Date): number` — returns whole minutes, rounded down
   - `calcCumulativeProfit(sessions: Session[]): { session: Session; cumulative: number }[]` — returns sessions in chronological order with a running cumulative P&L value
-- [ ] `calcDurationMins` returns `0` (not negative) if `endedAt` is before `startedAt`
-- [ ] `calcCumulativeProfit` handles an empty array by returning `[]`
+- [x] `calcDurationMins` returns `0` (not negative) if `endedAt` is before `startedAt`
+- [x] `calcCumulativeProfit` handles an empty array by returning `[]`
 
 ---
 
@@ -171,6 +181,7 @@ Centralize all business logic calculations so they can be reused by API routes a
 Connect the stub routes to the real repository so session data persists and can be retrieved.
 
 **Acceptance Criteria**:
+
 - [x] `GET /api/sessions` returns all sessions from `SessionRepository.getAll()` as JSON
 - [x] `POST /api/sessions` accepts `{ location_id, location_name, stakes_id, stakes_label, buy_in, started_at }`, validates required fields, creates a session with `status: "open"` and `game_type: "NLH"`, and returns the created session with `201`
 - [x] Missing required fields return `400` with a descriptive error message
@@ -181,6 +192,7 @@ Connect the stub routes to the real repository so session data persists and can 
 ### M2-02 — Wire GET, PUT, DELETE /api/sessions/[id] to SessionRepository
 
 **Acceptance Criteria**:
+
 - [x] `GET /api/sessions/[id]` returns the session or `404` if not found
 - [x] `PUT /api/sessions/[id]` accepts a partial session payload, merges it, and returns the updated session
 - [x] `DELETE /api/sessions/[id]` removes the session and returns `204`
@@ -193,6 +205,7 @@ Connect the stub routes to the real repository so session data persists and can 
 The Start Session form depends on these lists being available. Wire them before building the UI.
 
 **Acceptance Criteria**:
+
 - [x] `GET /api/locations` returns `Location[]` from `LocationRepository.getAll()`
 - [x] `GET /api/stakes` returns `Stakes[]` from `StakesRepository.getAll()`
 - [x] Both return `200` with an empty array when no data exists (no 404 or 500)
@@ -204,6 +217,7 @@ The Start Session form depends on these lists being available. Wire them before 
 The primary action in the app. The player selects a location, selects stakes, enters a buy-in, and taps "Start Session." The session is created with the current timestamp.
 
 **Acceptance Criteria**:
+
 - [x] Form renders on the home/dashboard page, accessible within one tap
 - [x] Location field is a dropdown populated from `GET /api/locations`
 - [x] Stakes field is a dropdown populated from `GET /api/stakes`
@@ -221,6 +235,7 @@ The primary action in the app. The player selects a location, selects stakes, en
 Players who always play the same game should be able to fill the form in one tap using their configured defaults.
 
 **Acceptance Criteria**:
+
 - [x] Start Session form fetches `GET /api/settings` on load
 - [x] If `default_location_id` and/or `default_stakes_id` are set, a "Use Defaults" button appears above the form fields
 - [x] Tapping "Use Defaults" pre-fills the location and stakes dropdowns with the configured defaults
@@ -234,6 +249,7 @@ Players who always play the same game should be able to fill the form in one tap
 If the player navigates away or refreshes the browser while a session is open, the app must recover the in-progress session on next load.
 
 **Acceptance Criteria**:
+
 - [x] On app load (and on every route navigation), the app calls `GET /api/sessions?status=open`
 - [x] If an open session is found, a persistent banner/indicator is displayed on every page showing the session is in progress (location, stakes, elapsed time at time of page load is acceptable — no live timer required)
 - [x] The banner includes a link/button to navigate to the Close Session flow
@@ -247,6 +263,7 @@ If the player navigates away or refreshes the browser while a session is open, t
 The player enters their cash-out amount, optionally adjusts the start time, adds notes, and optionally sets a rating to close the session.
 
 **Acceptance Criteria**:
+
 - [x] Close Session screen is reachable from the open session banner
 - [x] Cash-out amount field is required (numeric, decimal, minimum `0`)
 - [x] Start time field is pre-filled with `started_at` from the open session and is editable (date + time picker or text input in ISO format)
@@ -264,10 +281,11 @@ The player enters their cash-out amount, optionally adjusts the start time, adds
 Protect against accidental session closes where the player may have forgotten to enter the right cash-out or start time.
 
 **Acceptance Criteria**:
-- [ ] Before submitting the Close Session form, the client computes the session duration from `started_at` to the current time
-- [ ] If duration is under 15 minutes, a visible inline warning appears (e.g., "This session is only X minutes long — are you sure?")
-- [ ] The warning does not block submission — the "Close Session" button remains active and functional
-- [ ] The warning disappears if the user adjusts the start time so that duration exceeds 15 minutes
+
+- [x] Before submitting the Close Session form, the client computes the session duration from `started_at` to the current time
+- [x] If duration is under 15 minutes, a visible inline warning appears (e.g., "This session is only X minutes long — are you sure?")
+- [x] The warning does not block submission — the "Close Session" button remains active and functional
+- [x] The warning disappears if the user adjusts the start time so that duration exceeds 15 minutes
 
 ---
 
@@ -282,6 +300,7 @@ Protect against accidental session closes where the player may have forgotten to
 ### M3-01 — Wire all Location API routes to LocationRepository
 
 **Acceptance Criteria**:
+
 - [x] `POST /api/locations` accepts `{ name }`, validates non-empty, creates and returns the location with `201`
 - [x] `PUT /api/locations/[id]` accepts `{ name }`, updates and returns the location, or `404` if not found
 - [x] `DELETE /api/locations/[id]` removes the location and returns `204`, or `404` if not found
@@ -292,6 +311,7 @@ Protect against accidental session closes where the player may have forgotten to
 ### M3-02 — Wire all Stakes API routes to StakesRepository
 
 **Acceptance Criteria**:
+
 - [x] `POST /api/stakes` accepts `{ label, small_blind?, big_blind? }`, validates non-empty label, creates and returns the stakes entry with `201`
 - [x] `PUT /api/stakes/[id]` accepts `{ label, small_blind?, big_blind? }`, updates and returns, or `404`
 - [x] `DELETE /api/stakes/[id]` removes the entry and returns `204`, or `404`
@@ -304,6 +324,7 @@ Protect against accidental session closes where the player may have forgotten to
 The Settings page is the container for Locations management, Stakes management, and App Settings. It must exist before the sub-sections are built.
 
 **Acceptance Criteria**:
+
 - [x] A `/settings` route renders a Settings page
 - [x] Settings is reachable from the primary navigation (bottom nav or header link)
 - [x] Page has clearly labeled sections or tabs for: Locations, Stakes, App Settings
@@ -316,6 +337,7 @@ The Settings page is the container for Locations management, Stakes management, 
 Players must be able to add, rename, and delete their saved venues.
 
 **Acceptance Criteria**:
+
 - [x] Locations section lists all saved locations from `GET /api/locations`
 - [x] "Add Location" action opens an inline form or modal with a name text input
 - [x] Submitting the form calls `POST /api/locations` and refreshes the list on success
@@ -330,6 +352,7 @@ Players must be able to add, rename, and delete their saved venues.
 ### M3-05 — Build Stakes management UI
 
 **Acceptance Criteria**:
+
 - [x] Stakes section lists all saved stakes from `GET /api/stakes`
 - [x] "Add Stakes" action opens an inline form or modal with: label (required), small blind (optional), big blind (optional)
 - [x] Submitting calls `POST /api/stakes` and refreshes the list on success
@@ -343,6 +366,7 @@ Players must be able to add, rename, and delete their saved venues.
 ### M3-06 — Wire GET and PUT /api/settings to SettingsRepository
 
 **Acceptance Criteria**:
+
 - [x] `GET /api/settings` returns the current `AppSettings` (or defaults if none stored)
 - [x] `PUT /api/settings` accepts `{ default_location_id?, default_stakes_id? }`, merges with existing settings, and returns the updated object
 - [x] Missing or null values for `default_location_id` / `default_stakes_id` are accepted and stored as `null` (i.e., user can clear defaults)
@@ -354,6 +378,7 @@ Players must be able to add, rename, and delete their saved venues.
 Players can configure a default location and default stakes so the Start Session form pre-fills automatically.
 
 **Acceptance Criteria**:
+
 - [x] App Settings section shows two dropdowns: "Default Location" and "Default Stakes"
 - [x] Both dropdowns are populated from `GET /api/locations` and `GET /api/stakes` respectively
 - [x] Both dropdowns include a "None" / empty option so defaults can be cleared
@@ -376,6 +401,7 @@ Players can configure a default location and default stakes so the Start Session
 The session list is the player's primary audit trail. Every closed session must be visible here.
 
 **Acceptance Criteria**:
+
 - [ ] `/sessions` route renders a session history page
 - [ ] Page is reachable from primary navigation
 - [ ] Sessions are fetched from `GET /api/sessions` and displayed in date-descending order
@@ -393,6 +419,7 @@ The session list is the player's primary audit trail. Every closed session must 
 Players may need to correct buy-in, cash-out, start/end time, notes, or rating after the fact.
 
 **Acceptance Criteria**:
+
 - [ ] Each session row in the history list has an Edit button/icon
 - [ ] Tapping Edit opens an edit form (full-page or modal) pre-filled with all session fields
 - [ ] Editable fields: `started_at`, `ended_at`, `buy_in`, `cash_out`, `notes`, `rating`
@@ -407,6 +434,7 @@ Players may need to correct buy-in, cash-out, start/end time, notes, or rating a
 ### M4-03 — Build the Delete Session flow
 
 **Acceptance Criteria**:
+
 - [ ] Each session row has a Delete button/icon
 - [ ] Tapping Delete shows a confirmation dialog: "Delete this session? This cannot be undone."
 - [ ] Confirming calls `DELETE /api/sessions/[id]`
@@ -420,6 +448,7 @@ Players may need to correct buy-in, cash-out, start/end time, notes, or rating a
 Players want to isolate their results at a specific venue or stake level.
 
 **Acceptance Criteria**:
+
 - [ ] A filter bar above the session list contains two dropdowns: "Location" and "Stakes"
 - [ ] Both dropdowns are populated from the distinct values present in the session list (not from the saved locations/stakes lists — historical snapshots may differ)
 - [ ] Selecting a value filters the visible session list in real time (client-side filter, no API call required)
@@ -442,6 +471,7 @@ Players want to isolate their results at a specific venue or stake level.
 Quick-glance numbers that tell the player how they're doing overall.
 
 **Acceptance Criteria**:
+
 - [ ] Dashboard displays four stat tiles: Total Sessions, Total P&L (USD), Total Hours Played, Average P&L per Session
 - [ ] Values are computed from all closed sessions fetched from `GET /api/sessions`
 - [ ] Total P&L displays with "+" prefix for positive, "-" for negative, always with dollar sign
@@ -456,6 +486,7 @@ Quick-glance numbers that tell the player how they're doing overall.
 The chart is the primary visualization — a running total of profit or loss over time, showing the player's bankroll trajectory.
 
 **Acceptance Criteria**:
+
 - [ ] Dashboard renders a line chart using Recharts showing cumulative P&L on the Y-axis
 - [ ] X-axis defaults to session index (1, 2, 3…)
 - [ ] A toggle control (button group or radio) switches the X-axis between "Session #" and "Date"
@@ -475,6 +506,7 @@ The chart is the primary visualization — a running total of profit or loss ove
 Ensure the dashboard always reflects the latest data after a session is added, edited, or deleted.
 
 **Acceptance Criteria**:
+
 - [ ] Dashboard fetches sessions from `GET /api/sessions` on every mount
 - [ ] After a session is closed (from M2-07), the dashboard stats and chart update without requiring a manual page refresh
 - [ ] After a session is edited or deleted (from M4-02, M4-03), navigating to the dashboard shows updated values
@@ -493,6 +525,7 @@ Ensure the dashboard always reflects the latest data after a session is added, e
 ### M6-01 — Implement GET /api/export
 
 **Acceptance Criteria**:
+
 - [ ] `GET /api/export` returns a JSON response containing: all sessions (`Session[]`), all locations (`Location[]`), all stakes (`Stakes[]`), and app settings (`AppSettings`)
 - [ ] Response includes a `exported_at` ISO timestamp at the top level
 - [ ] Response includes a `version` field (set to `"1"`) for future import compatibility checking
@@ -505,6 +538,7 @@ Ensure the dashboard always reflects the latest data after a session is added, e
 ### M6-02 — Implement POST /api/import with full-replace behavior
 
 **Acceptance Criteria**:
+
 - [ ] `POST /api/import` accepts a JSON body matching the export schema
 - [ ] The route validates that the payload contains `sessions`, `locations`, and `stakes` arrays
 - [ ] Validation checks that each session contains required fields: `id`, `started_at`, `buy_in`, `status`
@@ -518,6 +552,7 @@ Ensure the dashboard always reflects the latest data after a session is added, e
 ### M6-03 — Build the Export UI
 
 **Acceptance Criteria**:
+
 - [ ] A "Export Data" button exists in the Settings page
 - [ ] Clicking it calls `GET /api/export` and triggers a browser file download named `poker-tracker-export-YYYY-MM-DD.json`
 - [ ] The button remains functional when there are zero sessions (exports valid empty JSON)
@@ -530,6 +565,7 @@ Ensure the dashboard always reflects the latest data after a session is added, e
 Import replaces all data. The player must be clearly warned before this happens.
 
 **Acceptance Criteria**:
+
 - [ ] An "Import Data" button exists in the Settings page
 - [ ] Clicking it opens a file picker accepting `.json` files only
 - [ ] After the user selects a file, a confirmation dialog appears with the text: "Importing will permanently replace all your existing sessions, locations, and stakes. This cannot be undone. Continue?"
@@ -555,6 +591,7 @@ Import replaces all data. The player must be clearly warned before this happens.
 The primary use case is a player logging a session on their phone at the table. Every interaction must be comfortable on a 375px viewport.
 
 **Acceptance Criteria**:
+
 - [ ] All interactive elements (buttons, dropdowns, inputs, icons) have a minimum tap target of 44x44px
 - [ ] No horizontal overflow or clipped content at 375px viewport width
 - [ ] The Start Session button and Close Session CTA are reachable without scrolling on a standard mobile screen
@@ -566,6 +603,7 @@ The primary use case is a player logging a session on their phone at the table. 
 ### M7-02 — Accessibility pass
 
 **Acceptance Criteria**:
+
 - [ ] All form inputs have associated `<label>` elements or `aria-label` attributes
 - [ ] All icon-only buttons have `aria-label` text describing the action (e.g., "Delete session")
 - [ ] P&L values are never conveyed by color alone — every value includes a "+" or "-" symbol and a numeric amount in text
@@ -580,6 +618,7 @@ The primary use case is a player logging a session on their phone at the table. 
 Every API call in the app must have a loading indicator and an error fallback so the player is never left staring at a blank screen.
 
 **Acceptance Criteria**:
+
 - [ ] All data-fetching operations show a loading indicator (spinner, skeleton, or disabled state) while the request is in flight
 - [ ] All form submissions disable the submit button and show a loading state during the request
 - [ ] All API errors surface a visible, human-readable error message to the user (not a raw JSON error or a silent failure)
@@ -591,6 +630,7 @@ Every API call in the app must have a loading indicator and an error fallback so
 ### M7-04 — App identity: icon, title, and favicon
 
 **Acceptance Criteria**:
+
 - [ ] Browser tab shows a meaningful page title (e.g., "Poker Tracker" or the current page name)
 - [ ] A favicon is set and renders in the browser tab
 - [ ] The app name or logo appears in the primary navigation/header
@@ -603,6 +643,7 @@ Every API call in the app must have a loading indicator and an error fallback so
 Verify every primary use case from the PRD works end-to-end in a real browser before marking V1 complete.
 
 **Acceptance Criteria**:
+
 - [ ] UC-01 (Start session) works on mobile (375px viewport) and desktop
 - [ ] UC-02 (End session) — including start time adjustment, notes, and rating — works correctly and P&L is accurate
 - [ ] UC-03 (View profit chart) renders correctly after 1, 5, and 20 sessions
@@ -624,10 +665,11 @@ Verify every primary use case from the PRD works end-to-end in a real browser be
 ### M7-06 — README with local setup instructions
 
 **Acceptance Criteria**:
+
 - [ ] `README.md` at the project root includes: prerequisites (Node version, package manager), install steps (`npm install`), local dev command (`npm run dev`), and a brief description of the app
 - [ ] No secrets, API keys, or personal data appear in the README
 - [ ] Instructions work for a fresh clone of the repository
 
 ---
 
-*All tickets cover functional requirements FR-01 through FR-33. Complete milestones in order. Each milestone produces a shippable, testable increment.*
+_All tickets cover functional requirements FR-01 through FR-33. Complete milestones in order. Each milestone produces a shippable, testable increment._
