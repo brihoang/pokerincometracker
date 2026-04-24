@@ -5,22 +5,25 @@ import Link from "next/link";
 import { Location, Stakes, Session } from "@/lib/types";
 import { getLocations } from "@/lib/client/locations";
 import { getStakes } from "@/lib/client/stakes";
-import { getOpenSession } from "@/lib/client/sessions";
+import { getOpenSession, getSessions } from "@/lib/client/sessions";
 import StartSessionForm from "@/app/components/StartSessionForm";
+import StatsStrip from "@/app/components/StatsStrip";
 
 export default function Home() {
   const [locations, setLocations] = useState<Location[]>([]);
   const [stakes, setStakes] = useState<Stakes[]>([]);
   const [openSession, setOpenSession] = useState<Session | null>(null);
+  const [closedSessions, setClosedSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     function load() {
       setLoading(true);
-      Promise.all([getLocations(), getStakes(), getOpenSession()]).then(([locs, stks, session]) => {
+      Promise.all([getLocations(), getStakes(), getOpenSession(), getSessions()]).then(([locs, stks, session, all]) => {
         setLocations(locs);
         setStakes(stks);
         setOpenSession(session);
+        setClosedSessions(all.filter((s) => s.status === "closed"));
         setLoading(false);
       });
     }
@@ -49,6 +52,7 @@ export default function Home() {
           <h1 className="text-2xl font-bold tracking-tight text-white">Poker Tracker</h1>
           <div className="flex items-center gap-4">
             <Link href="/sessions" className="text-sm text-zinc-500 hover:text-zinc-300">History</Link>
+            <Link href="/report" className="text-sm text-zinc-500 hover:text-zinc-300">Report</Link>
             <Link href="/settings" className="text-sm text-zinc-500 hover:text-zinc-300">Settings</Link>
           </div>
         </div>
@@ -70,6 +74,10 @@ export default function Home() {
             />
           </div>
         )}
+
+        <div className="mt-6">
+          <StatsStrip sessions={closedSessions} />
+        </div>
       </div>
     </main>
   );
