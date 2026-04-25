@@ -8,6 +8,7 @@ import { getStakes } from "@/lib/client/stakes";
 import LocationsManager from "@/app/components/LocationsManager";
 import StakesManager from "@/app/components/StakesManager";
 import AppSettingsManager from "@/app/components/AppSettingsManager";
+import DataManager from "@/app/components/DataManager";
 
 export default function SettingsPage() {
   const [locations, setLocations] = useState<Location[]>([]);
@@ -38,9 +39,14 @@ export default function SettingsPage() {
           <StakesManager stakes={stakes} onChange={setStakes} />
         </div>
 
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6">
+        <div className="mb-6 rounded-xl border border-zinc-800 bg-zinc-900 p-6">
           <h2 className="mb-4 text-base font-semibold text-white">App Settings</h2>
           <AppSettingsManager locations={locations} stakes={stakes} />
+        </div>
+
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6">
+          <h2 className="mb-4 text-base font-semibold text-white">Data</h2>
+          <DataManager />
         </div>
       </div>
     </main>
