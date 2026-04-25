@@ -34,7 +34,9 @@ export default function CloseSessionPage() {
   const [buyIn, setBuyIn] = useState("");
   const [cashOut, setCashOut] = useState("");
   const [startedAt, setStartedAt] = useState("");
-  const [endedAt, setEndedAt] = useState(() => toDatetimeLocal(new Date().toISOString()));
+  const [endedAt, setEndedAt] = useState(() =>
+    toDatetimeLocal(new Date().toISOString()),
+  );
   const [notes, setNotes] = useState("");
   const [rating, setRating] = useState<Rating | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -43,17 +45,23 @@ export default function CloseSessionPage() {
   useEffect(() => {
     function load() {
       setLoading(true);
-      Promise.all([getOpenSession(), getLocations(), getStakes()]).then(([s, locs, stks]) => {
-        if (!s) { router.replace("/"); return; }
-        setSession(s);
-        setLocations(locs);
-        setStakes(stks);
-        setLocationId(s.location_id);
-        setStakesId(s.stakes_id);
-        setBuyIn(String(s.buy_in));
-        setStartedAt(toDatetimeLocal(s.started_at));
-        setLoading(false);
-      });
+      Promise.all([getOpenSession(), getLocations(), getStakes()]).then(
+        ([s, locs, stks]) => {
+          if (!s) {
+            router.replace("/");
+            return;
+          }
+          setSession(s);
+          setLocations(locs);
+          setStakes(stks);
+          setLocationId(s.location_id);
+          setStakesId(s.stakes_id);
+          setBuyIn(String(s.buy_in));
+          setStartedAt(toDatetimeLocal(s.started_at));
+          setNotes(s.notes ?? "");
+          setLoading(false);
+        },
+      );
     }
 
     load();
@@ -77,9 +85,12 @@ export default function CloseSessionPage() {
 
   const sessionMins =
     startedAt && endedAt
-      ? Math.floor((new Date(endedAt).getTime() - new Date(startedAt).getTime()) / 60000)
+      ? Math.floor(
+          (new Date(endedAt).getTime() - new Date(startedAt).getTime()) / 60000,
+        )
       : null;
-  const showShortWarning = sessionMins !== null && sessionMins >= 0 && sessionMins < 15;
+  const showShortWarning =
+    sessionMins !== null && sessionMins >= 0 && sessionMins < 15;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -134,13 +145,22 @@ export default function CloseSessionPage() {
     <main className="flex min-h-screen flex-col items-center overflow-x-hidden bg-zinc-950 px-4 py-12">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex items-center justify-between">
-          <h1 className="text-2xl font-bold tracking-tight text-white">Close Session</h1>
-          <Link href="/" className="text-sm text-zinc-500 hover:text-zinc-300">Cancel</Link>
+          <h1 className="text-2xl font-bold tracking-tight text-white">
+            Close Session
+          </h1>
+          <Link href="/" className="text-sm text-zinc-500 hover:text-zinc-300">
+            Cancel
+          </Link>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label htmlFor="location" className="mb-1.5 block text-sm font-medium text-zinc-300">Location</label>
+            <label
+              htmlFor="location"
+              className="mb-1.5 block text-sm font-medium text-zinc-300"
+            >
+              Location
+            </label>
             <select
               id="location"
               value={locationId}
@@ -148,13 +168,20 @@ export default function CloseSessionPage() {
               className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white focus:border-emerald-500 focus:outline-none"
             >
               {locations.map((l) => (
-                <option key={l.id} value={l.id}>{l.name}</option>
+                <option key={l.id} value={l.id}>
+                  {l.name}
+                </option>
               ))}
             </select>
           </div>
 
           <div>
-            <label htmlFor="stakes" className="mb-1.5 block text-sm font-medium text-zinc-300">Stakes</label>
+            <label
+              htmlFor="stakes"
+              className="mb-1.5 block text-sm font-medium text-zinc-300"
+            >
+              Stakes
+            </label>
             <select
               id="stakes"
               value={stakesId}
@@ -162,13 +189,20 @@ export default function CloseSessionPage() {
               className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white focus:border-emerald-500 focus:outline-none"
             >
               {stakes.map((s) => (
-                <option key={s.id} value={s.id}>{s.label}</option>
+                <option key={s.id} value={s.id}>
+                  {s.label}
+                </option>
               ))}
             </select>
           </div>
 
           <div>
-            <label htmlFor="buyIn" className="mb-1.5 block text-sm font-medium text-zinc-300">Buy-in ($)</label>
+            <label
+              htmlFor="buyIn"
+              className="mb-1.5 block text-sm font-medium text-zinc-300"
+            >
+              Buy-in ($)
+            </label>
             <input
               id="buyIn"
               type="number"
@@ -184,7 +218,12 @@ export default function CloseSessionPage() {
           </div>
 
           <div>
-            <label htmlFor="cashOut" className="mb-1.5 block text-sm font-medium text-zinc-300">Cash-out ($)</label>
+            <label
+              htmlFor="cashOut"
+              className="mb-1.5 block text-sm font-medium text-zinc-300"
+            >
+              Cash-out ($)
+            </label>
             <input
               id="cashOut"
               type="number"
@@ -201,7 +240,12 @@ export default function CloseSessionPage() {
           </div>
 
           <div>
-            <label htmlFor="startedAt" className="mb-1.5 block text-sm font-medium text-zinc-300">Start time</label>
+            <label
+              htmlFor="startedAt"
+              className="mb-1.5 block text-sm font-medium text-zinc-300"
+            >
+              Start time
+            </label>
             <div className="overflow-hidden rounded-lg border border-zinc-700 bg-zinc-800 focus-within:border-emerald-500">
               <input
                 id="startedAt"
@@ -215,7 +259,12 @@ export default function CloseSessionPage() {
           </div>
 
           <div>
-            <label htmlFor="endedAt" className="mb-1.5 block text-sm font-medium text-zinc-300">End time</label>
+            <label
+              htmlFor="endedAt"
+              className="mb-1.5 block text-sm font-medium text-zinc-300"
+            >
+              End time
+            </label>
             <div className="overflow-hidden rounded-lg border border-zinc-700 bg-zinc-800 focus-within:border-emerald-500">
               <input
                 id="endedAt"
@@ -229,7 +278,10 @@ export default function CloseSessionPage() {
           </div>
 
           <div>
-            <label htmlFor="notes" className="mb-1.5 block text-sm font-medium text-zinc-300">
+            <label
+              htmlFor="notes"
+              className="mb-1.5 block text-sm font-medium text-zinc-300"
+            >
               Notes <span className="text-zinc-500">(optional)</span>
             </label>
             <textarea
@@ -266,7 +318,8 @@ export default function CloseSessionPage() {
 
           {showShortWarning && (
             <p className="rounded-lg border border-yellow-700 bg-yellow-950 px-4 py-3 text-sm text-yellow-400">
-              This session is only {sessionMins} {sessionMins === 1 ? "minute" : "minutes"} long — are you sure?
+              This session is only {sessionMins}{" "}
+              {sessionMins === 1 ? "minute" : "minutes"} long — are you sure?
             </p>
           )}
 

@@ -18,7 +18,11 @@ interface Props {
 
 export default function OpenSessionEditor({ session, onSaved }: Props) {
   const [buyIn, setBuyIn] = useState(String(session.buy_in));
-  const [startedAt, setStartedAt] = useState(toDatetimeLocal(session.started_at));
+  const [startedAt, setStartedAt] = useState(
+    toDatetimeLocal(session.started_at),
+  );
+  const [notes, setNotes] = useState(session.notes ?? "");
+
   const [saving, setSaving] = useState(false);
 
   async function handleSave() {
@@ -29,6 +33,7 @@ export default function OpenSessionEditor({ session, onSaved }: Props) {
       const updated = await updateSession(session.id, {
         buy_in: parsedBuyIn,
         started_at: new Date(startedAt).toISOString(),
+        notes: notes.trim() === "" ? null : notes.trim(),
       });
       onSaved(updated);
     } finally {
@@ -80,6 +85,22 @@ export default function OpenSessionEditor({ session, onSaved }: Props) {
               className="w-full bg-transparent px-3 py-2 text-sm text-white outline-none"
             />
           </div>
+        </div>
+        <div>
+          <label
+            htmlFor="notes"
+            className="mb-1.5 block text-sm font-medium text-zinc-300"
+          >
+            Notes <span className="text-zinc-500">(optional)</span>
+          </label>
+          <textarea
+            id="notes"
+            rows={3}
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="How did the session go?"
+            className="w-full resize-none rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white placeholder-zinc-500 focus:border-emerald-500 focus:outline-none"
+          />
         </div>
         {dirty && (
           <button
