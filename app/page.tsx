@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { Location, Stakes, Session } from "@/lib/types";
 import { getLocations } from "@/lib/client/locations";
 import { getStakes } from "@/lib/client/stakes";
@@ -47,16 +46,8 @@ export default function Home() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center bg-zinc-950 px-4 py-12">
+    <main className="flex min-h-screen flex-col items-center bg-zinc-950 px-4 pb-12 pt-8">
       <div className="w-full max-w-sm">
-        <div className="mb-8 flex items-center justify-between">
-          <h1 className="text-2xl font-bold tracking-tight text-white">Poker Tracker</h1>
-          <div className="flex items-center gap-4">
-            <Link href="/sessions" className="text-sm text-zinc-500 hover:text-zinc-300">History</Link>
-            <Link href="/report" className="text-sm text-zinc-500 hover:text-zinc-300">Report</Link>
-            <Link href="/settings" className="text-sm text-zinc-500 hover:text-zinc-300">Settings</Link>
-          </div>
-        </div>
 
         {openSession ? (
           <OpenSessionEditor session={openSession} onSaved={setOpenSession} />

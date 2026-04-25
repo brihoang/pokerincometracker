@@ -84,12 +84,9 @@ export default function ReportPage() {
   const filterCount = activeFilterCount(filter);
 
   return (
-    <main className="flex min-h-screen flex-col items-center bg-zinc-950 px-4 py-12">
+    <main className="flex min-h-screen flex-col items-center bg-zinc-950 px-4 pb-12 pt-8">
       <div className="w-full max-w-sm">
-        <div className="mb-6 flex items-center gap-3">
-          <Link href="/" className="text-sm text-zinc-500 hover:text-zinc-300">← Home</Link>
-          <h1 className="text-2xl font-bold tracking-tight text-white">Report</h1>
-        </div>
+        <h1 className="mb-6 text-2xl font-bold tracking-tight text-white">Report</h1>
 
         {!loading && sessions.length > 0 && (
           <>
