@@ -37,7 +37,7 @@ export interface Stakes {
 
 export type YAxisMode = "currency" | "bb";
 
-export type TimeRangePreset = "all" | "last30" | "last90" | "last180" | "last365" | "custom";
+export type TimeRangePreset = "all" | "ytd" | "last30" | "last90" | "last180" | "last365" | "custom";
 
 export interface FilterState {
   location: string;

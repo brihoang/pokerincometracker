@@ -21,8 +21,11 @@ function filterSessions(sessions: Session[], filter: FilterState): Session[] {
   return sessions.filter((s) => {
     if (filter.location !== "all" && s.location_name !== filter.location) return false;
     if (filter.stakes !== "all" && s.stakes_label !== filter.stakes) return false;
-    if (filter.timeRange !== "all" && filter.timeRange !== "custom") {
-      const days = { last30: 30, last90: 90, last180: 180, last365: 365 }[filter.timeRange];
+    if (filter.timeRange === "ytd") {
+      const jan1 = new Date(new Date().getFullYear(), 0, 1);
+      if (!s.ended_at || new Date(s.ended_at) < jan1) return false;
+    } else if (filter.timeRange !== "all" && filter.timeRange !== "custom") {
+      const days = { last30: 30, last90: 90, last180: 180, last365: 365 }[filter.timeRange as "last30" | "last90" | "last180" | "last365"];
       const cutoff = new Date();
       cutoff.setDate(cutoff.getDate() - days);
       if (!s.ended_at || new Date(s.ended_at) < cutoff) return false;

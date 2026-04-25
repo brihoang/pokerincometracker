@@ -4,10 +4,10 @@ import { FilterState, TimeRangePreset } from "@/lib/types";
 
 const PRESETS: { value: TimeRangePreset; label: string }[] = [
   { value: "all", label: "All" },
-  { value: "last30", label: "30d" },
   { value: "last90", label: "3m" },
   { value: "last180", label: "6m" },
   { value: "last365", label: "1yr" },
+  { value: "ytd", label: "YTD" },
   { value: "custom", label: "Custom" },
 ];
 
