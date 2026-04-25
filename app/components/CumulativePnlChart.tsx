@@ -89,9 +89,30 @@ export default function CumulativePnlChart({ sessions, mode, onModeChange }: Pro
   }
 
   const yValues = data.map((d) => d.cumulative);
-  const yMin = Math.min(0, ...yValues);
-  const yMax = Math.max(0, ...yValues);
-  const padding = Math.max((yMax - yMin) * 0.1, mode === "bb" ? 2 : 5);
+  const rawMin = Math.min(0, ...yValues);
+  const rawMax = Math.max(0, ...yValues);
+
+  function niceScale(min: number, max: number, targetTicks = 5) {
+    const range = max - min;
+    if (range === 0) {
+      const step = Math.abs(min) > 0 ? Math.pow(10, Math.floor(Math.log10(Math.abs(min)))) : 1;
+      return { domain: [min - step, max + step] as [number, number], ticks: [min] };
+    }
+    const rawStep = range / (targetTicks - 1);
+    const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
+    const normalized = rawStep / magnitude;
+    const niceStep = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 5 ? 5 : 10;
+    const step = niceStep * magnitude;
+    const niceMin = Math.floor(min / step) * step;
+    const niceMax = Math.ceil(max / step) * step;
+    const ticks: number[] = [];
+    for (let t = niceMin; t <= niceMax + step * 0.001; t += step) {
+      ticks.push(Math.round(t * 1e6) / 1e6);
+    }
+    return { domain: [niceMin, niceMax] as [number, number], ticks };
+  }
+
+  const { domain: yDomain, ticks: yTicks } = niceScale(rawMin, rawMax);
 
   const yTickFormatter =
     mode === "bb"
@@ -126,7 +147,8 @@ export default function CumulativePnlChart({ sessions, mode, onModeChange }: Pro
         <LineChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
           <XAxis hide />
           <YAxis
-            domain={[yMin - padding, yMax + padding]}
+            domain={yDomain}
+            ticks={yTicks}
             tickFormatter={yTickFormatter}
             tick={{ fill: "#71717a", fontSize: 11 }}
             width={mode === "bb" ? 44 : 50}
