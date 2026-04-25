@@ -72,12 +72,14 @@ export default function OpenSessionEditor({ session, onSaved }: Props) {
         </div>
         <div>
           <label className="mb-1 block text-xs text-zinc-400">Start time</label>
-          <input
-            type="datetime-local"
-            value={startedAt}
-            onChange={(e) => setStartedAt(e.target.value)}
-            className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none"
-          />
+          <div className="overflow-hidden rounded-lg border border-zinc-700 bg-zinc-800 focus-within:border-emerald-500">
+            <input
+              type="datetime-local"
+              value={startedAt}
+              onChange={(e) => setStartedAt(e.target.value)}
+              className="w-full bg-transparent px-3 py-2 text-sm text-white outline-none"
+            />
+          </div>
         </div>
         {dirty && (
           <button
