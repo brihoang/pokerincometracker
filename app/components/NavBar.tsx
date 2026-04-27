@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth, UserButton } from "@clerk/nextjs";
 
 const NAV_ITEMS = [
   { label: "Home",     href: "/" },
@@ -14,6 +15,7 @@ const NAV_ITEMS = [
 export default function NavBar() {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const { isSignedIn } = useAuth();
 
   useEffect(() => { setDrawerOpen(false); }, [pathname]);
 
@@ -34,7 +36,7 @@ export default function NavBar() {
           Poker Tracker
         </Link>
 
-        {/* Desktop: Option C — text links with green underline */}
+        {/* Desktop: text links with green underline + auth */}
         <nav className="hidden items-center gap-7 sm:flex">
           {NAV_ITEMS.map(({ label, href }) => (
             <Link
@@ -49,6 +51,13 @@ export default function NavBar() {
               {label}
             </Link>
           ))}
+          {isSignedIn ? (
+            <UserButton />
+          ) : (
+            <Link href="/sign-in" className="border-b-2 border-transparent pb-0.5 text-sm font-normal text-zinc-400 hover:text-zinc-200 transition-colors">
+              Sign in
+            </Link>
+          )}
         </nav>
 
         {/* Mobile: hamburger */}
@@ -89,6 +98,15 @@ export default function NavBar() {
             {isActive(href) && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />}
           </Link>
         ))}
+        <div className="border-b border-zinc-900 px-5 py-[14px]">
+          {isSignedIn ? (
+            <UserButton />
+          ) : (
+            <Link href="/sign-in" onClick={() => setDrawerOpen(false)} className="text-[15px] font-normal text-white">
+              Sign in
+            </Link>
+          )}
+        </div>
       </div>
     </>
   );
