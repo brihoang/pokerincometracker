@@ -6,7 +6,7 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/sessions/[id]">
   const { userId } = await auth();
   if (!userId) return new Response("Unauthorized", { status: 401 });
   const { id } = await ctx.params;
-  const session = SessionRepository.getById(id);
+  const session = await SessionRepository.getById(userId, id);
   if (!session) return Response.json({ error: "Session not found" }, { status: 404 });
   return Response.json(session);
 }
@@ -15,7 +15,7 @@ export async function PUT(req: Request, ctx: RouteContext<"/api/sessions/[id]">)
   const { userId } = await auth();
   if (!userId) return new Response("Unauthorized", { status: 401 });
   const { id } = await ctx.params;
-  const existing = SessionRepository.getById(id);
+  const existing = await SessionRepository.getById(userId, id);
   if (!existing) return Response.json({ error: "Session not found" }, { status: 404 });
   const body = await req.json();
   const patch = { ...body };
@@ -27,7 +27,7 @@ export async function PUT(req: Request, ctx: RouteContext<"/api/sessions/[id]">)
     patch.duration_mins = calcDurationMins(new Date(startedAt), new Date(endedAt));
   }
 
-  const updated = SessionRepository.update(id, patch);
+  const updated = await SessionRepository.update(userId, id, patch);
   return Response.json(updated);
 }
 
@@ -35,7 +35,7 @@ export async function DELETE(_req: Request, ctx: RouteContext<"/api/sessions/[id
   const { userId } = await auth();
   if (!userId) return new Response("Unauthorized", { status: 401 });
   const { id } = await ctx.params;
-  const deleted = SessionRepository.delete(id);
+  const deleted = await SessionRepository.delete(userId, id);
   if (!deleted) return Response.json({ error: "Session not found" }, { status: 404 });
   return new Response(null, { status: 204 });
 }

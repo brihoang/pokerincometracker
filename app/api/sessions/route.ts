@@ -8,11 +8,11 @@ export async function GET(req: NextRequest) {
   const status = req.nextUrl.searchParams.get("status");
 
   if (status === "open") {
-    const open = SessionRepository.getOpen();
+    const open = await SessionRepository.getOpen(userId);
     return Response.json(open ? [open] : []);
   }
 
-  return Response.json(SessionRepository.getAll());
+  return Response.json(await SessionRepository.getAll(userId));
 }
 
 export async function POST(req: NextRequest) {
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const session = SessionRepository.create({
+  const session = await SessionRepository.create(userId, {
     location_id,
     location_name,
     stakes_id,
