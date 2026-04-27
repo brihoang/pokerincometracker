@@ -8,15 +8,54 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 npm run dev       # Start local dev server at localhost:3000
 npm run build     # Production build
 npm run lint      # ESLint check
+npx drizzle-kit push   # Push schema changes to Neon (loads .env.local automatically)
 ```
 
 ## Architecture
 
 ### Core Principle: API-First, Always
 
-React components **never** read or write localStorage directly. All data access goes through the client service layer (`/lib/client/`), which calls `/app/api/...` routes when logged in and reads localStorage directly otherwise. `isLoggedIn()` always returns `false` in V1 — all data is localStorage-only. This contract makes a future Postgres migration seamless: only the repository adapters change.
+React components **never** read or write localStorage directly. All data access goes through the client service layer (`/lib/client/`), which calls `/app/api/...` routes when logged in and reads localStorage directly otherwise.
 
-### Client Service Layer (V1 entry point)
+Auth state is determined by `waitForAuth()` (not `isLoggedIn()`) — an async function that resolves once Clerk has confirmed the session. `AuthSync` in the layout populates this via `useAuth`. Never call `isLoggedIn()` directly in service functions; always `await waitForAuth()`.
+
+### Auth (Clerk)
+
+- `ClerkProvider` wraps the app in `app/layout.tsx` with `appearance={{ theme: dark }}`
+- Middleware (`middleware.ts`) makes auth available on all routes but never forces sign-in
+- All API routes call `await auth()` from `@clerk/nextjs/server` and return 401 if no `userId`
+- Sign-in/sign-up pages live at `app/sign-in/[[...sign-in]]` and `app/sign-up/[[...sign-up]]`
+- `AuthSync` component (in layout) sets auth state and wipes localStorage on sign-out
+- `MigrationBanner` component (in layout) handles the login data migration flow
+
+### Login / Data Migration Flow
+
+On login, `MigrationBanner` checks for local data and prompts accordingly:
+
+| Local data | DB data | Behavior |
+|---|---|---|
+| None | None | Silent — fresh start |
+| None | Exists | Silent — DB data loads automatically |
+| Exists | None | Prompt to import local data (safe) |
+| Exists | Exists | Prompt to import with destructive warning (replaces account data) |
+
+On dismiss or after import: localStorage is wiped. On logout: localStorage is wiped immediately.
+
+`GET /api/data/status` → `{ hasData: boolean }` — checks all 4 tables with LIMIT 1.
+
+### Database (Neon + Drizzle)
+
+- Schema: `lib/schema.ts` — tables: `sessions`, `locations`, `stakes`, `settings`
+- DB connection: `lib/db.ts` — uses `@neondatabase/serverless` + `drizzle-orm/neon-http`
+- All tables have a `user_id` column; all queries are scoped by `userId`
+- `settings` table uses `user_id` as primary key (one row per user)
+- `DATABASE_URL` lives in `.env.local`
+
+**Money as cents:** All money fields (`buy_in`, `cash_out`, `profit_loss`, `big_blind`, `small_blind`) are stored as **integer cents** in the DB. Repository layer multiplies by 100 on write and divides by 100 on read. UI types remain in dollars throughout. The import route also multiplies by 100 when migrating localStorage data.
+
+**Timestamps:** DB columns are `timestamp with time zone`. Repositories convert to/from ISO strings at the boundary to match TypeScript types.
+
+### Client Service Layer
 
 Components call functions in `/lib/client/` — never repositories or localStorage directly.
 
@@ -25,18 +64,19 @@ Components call functions in `/lib/client/` — never repositories or localStora
 /lib/client/locations.ts    → getLocations, createLocation, updateLocation, deleteLocation
 /lib/client/stakes.ts       → getStakes, createStake, updateStake, deleteStake
 /lib/client/settings.ts     → getSettings, updateSettings
-/lib/client/dataManager.ts  → exportData() (Blob download), importData() (localStorage full-replace)
+/lib/client/auth.ts         → waitForAuth(), setAuthState(), isLoggedIn()
+/lib/client/dataManager.ts  → exportData, importData, deleteAllData, hasLocalData, clearLocalData, getLocalPayload
 ```
 
 ### Repository Pattern
 
-Each entity has a repository in `/lib/repositories/`. In V1, repositories read/write localStorage. In V2, they'll swap to Prisma/Postgres. API routes call repositories exclusively.
+Each entity has a repository in `/lib/repositories/`. Repositories use Drizzle/Neon and accept `userId` as the first parameter on every method.
 
 ```
-/lib/repositories/sessions.ts   → SessionRepository
-/lib/repositories/locations.ts  → LocationRepository
-/lib/repositories/stakes.ts     → StakesRepository
-/lib/repositories/settings.ts   → SettingsRepository
+/lib/repositories/sessions.ts   → SessionRepository (getAll, getById, getOpen, create, update, delete)
+/lib/repositories/locations.ts  → LocationRepository (getAll, create, update, delete)
+/lib/repositories/stakes.ts     → StakesRepository (getAll, create, update, delete)
+/lib/repositories/settings.ts   → SettingsRepository (get, update) — upserts default row if none exists
 ```
 
 ### Folder Structure
@@ -51,28 +91,35 @@ Each entity has a repository in `/lib/repositories/`. In V1, repositories read/w
     /stakes           → GET, POST
     /stakes/[id]      → GET, PUT, DELETE
     /settings         → GET, PUT
+    /data             → GET (status check), DELETE (wipe all user data)
     /export           → GET (full JSON dump)
-    /import           → POST (full replace)
+    /import           → POST (full replace — writes to Neon when logged in)
   /components
-    StartSessionForm.tsx      → session start form
-    OpenSessionEditor.tsx     → inline buy-in/start-time editor for open session on home page
-    OpenSessionBanner.tsx     → top banner shown on all pages when a session is open
-    StatsStrip.tsx            → 4-tile stats grid (Sessions, P/L, Hours, Avg); accepts optional `mode` prop
-    CumulativePnlChart.tsx    → Recharts cumulative P&L line chart with $/BB toggle
-    ReportFilters.tsx         → time preset buttons + location/stakes selects (controlled, no internal state)
-    FilterSheet.tsx           → mobile bottom-drawer wrapping ReportFilters with draft/apply pattern
-    DataManager.tsx           → Export button + Import file-picker with confirmation dialog
-    LocationsManager.tsx      → props-based CRUD for locations
-    StakesManager.tsx         → props-based CRUD for stakes
-    AppSettingsManager.tsx    → default location/stakes selector
+    AuthSync.tsx            → sets auth state from Clerk, wipes localStorage on sign-out
+    MigrationBanner.tsx     → login-time prompt to import local data to DB
+    StartSessionForm.tsx    → session start form
+    OpenSessionEditor.tsx   → inline buy-in/start-time editor for open session on home page
+    OpenSessionBanner.tsx   → top banner shown on all pages when a session is open
+    StatsStrip.tsx          → 4-tile stats grid (Sessions, P/L, Hours, Avg); accepts optional `mode` prop
+    CumulativePnlChart.tsx  → Recharts cumulative P&L line chart with $/BB toggle
+    ReportFilters.tsx       → time preset buttons + location/stakes selects (controlled, no internal state)
+    FilterSheet.tsx         → mobile bottom-drawer wrapping ReportFilters with draft/apply pattern
+    DataManager.tsx         → Export, Import, and Delete All Data with confirmation dialogs
+    LocationsManager.tsx    → props-based CRUD for locations
+    StakesManager.tsx       → props-based CRUD for stakes
+    AppSettingsManager.tsx  → default location/stakes selector
+  /sign-in/[[...sign-in]]   → Clerk sign-in page
+  /sign-up/[[...sign-up]]   → Clerk sign-up page
   /sessions           → session history list with location/stakes filters
   /sessions/[id]      → session detail/edit (SessionView, SessionEditForm, utils)
   /sessions/close     → close-session form
   /report             → cumulative chart + filters + stats (mobile: FilterSheet; desktop: inline ReportFilters)
-  /settings           → locations, stakes, app settings, data export/import
+  /settings           → locations, stakes, app settings, data export/import/delete
 /lib
-  /repositories/      → data access layer (localStorage adapters in V1)
+  /repositories/      → data access layer (Drizzle/Neon, all methods scoped by userId)
   /storage/           → localStorage read/write helpers + key constants
+  /schema.ts          → Drizzle table definitions
+  /db.ts              → Neon/Drizzle db instance
   /types/index.ts     → shared TypeScript interfaces (single source of truth)
   /utils/
     calculations.ts   → calcProfitLoss, calcDurationMins, calcCumulativeProfit
@@ -80,6 +127,8 @@ Each entity has a repository in `/lib/repositories/`. In V1, repositories read/w
 ```
 
 ### localStorage Keys
+
+Used only when not logged in. Wiped on sign-out and after migration.
 
 ```
 PIT_SESSIONS   → Session[]
@@ -92,7 +141,7 @@ PIT_SETTINGS   → AppSettings
 
 **Session** — core entity. `location_name` and `stakes_label` are denormalized snapshots stored at write time; they survive location/stakes renames or deletions. `profit_loss` and `duration_mins` are computed on close and stored (not derived at read time). `big_blind` is stored per-session for BB-mode calculations.
 
-**AppSettings** — single object. `currency_symbol` is hard-coded `"$"` and not user-configurable in V1. `default_location_id` and `default_stakes_id` are nullable UUIDs.
+**AppSettings** — single object. `currency_symbol` is hard-coded `"$"` and not user-configurable. `default_location_id` and `default_stakes_id` are nullable UUIDs.
 
 Key field types (from `/lib/types/index.ts`):
 - `rating`: `"good" | "neutral" | "bad" | null`
