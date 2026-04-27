@@ -1,7 +1,10 @@
+import { auth } from "@clerk/nextjs/server";
 import { SessionRepository } from "@/lib/repositories/sessions";
 import { calcProfitLoss, calcDurationMins } from "@/lib/utils/calculations";
 
 export async function GET(_req: Request, ctx: RouteContext<"/api/sessions/[id]">) {
+  const { userId } = await auth();
+  if (!userId) return new Response("Unauthorized", { status: 401 });
   const { id } = await ctx.params;
   const session = SessionRepository.getById(id);
   if (!session) return Response.json({ error: "Session not found" }, { status: 404 });
@@ -9,6 +12,8 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/sessions/[id]">
 }
 
 export async function PUT(req: Request, ctx: RouteContext<"/api/sessions/[id]">) {
+  const { userId } = await auth();
+  if (!userId) return new Response("Unauthorized", { status: 401 });
   const { id } = await ctx.params;
   const existing = SessionRepository.getById(id);
   if (!existing) return Response.json({ error: "Session not found" }, { status: 404 });
@@ -27,6 +32,8 @@ export async function PUT(req: Request, ctx: RouteContext<"/api/sessions/[id]">)
 }
 
 export async function DELETE(_req: Request, ctx: RouteContext<"/api/sessions/[id]">) {
+  const { userId } = await auth();
+  if (!userId) return new Response("Unauthorized", { status: 401 });
   const { id } = await ctx.params;
   const deleted = SessionRepository.delete(id);
   if (!deleted) return Response.json({ error: "Session not found" }, { status: 404 });

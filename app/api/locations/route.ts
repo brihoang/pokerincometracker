@@ -1,11 +1,16 @@
 import { NextRequest } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { LocationRepository } from "@/lib/repositories/locations";
 
 export async function GET() {
+  const { userId } = await auth();
+  if (!userId) return new Response("Unauthorized", { status: 401 });
   return Response.json(LocationRepository.getAll());
 }
 
 export async function POST(req: NextRequest) {
+  const { userId } = await auth();
+  if (!userId) return new Response("Unauthorized", { status: 401 });
   const body = await req.json();
   const { name } = body;
 

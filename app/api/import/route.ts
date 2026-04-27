@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { SessionRepository } from "@/lib/repositories/sessions";
 import { LocationRepository } from "@/lib/repositories/locations";
 import { StakesRepository } from "@/lib/repositories/stakes";
@@ -6,6 +7,8 @@ import { SettingsRepository } from "@/lib/repositories/settings";
 import { setItem, PIT_SESSIONS, PIT_LOCATIONS, PIT_STAKES, PIT_SETTINGS } from "@/lib/storage/localStorage";
 
 export async function POST(req: NextRequest) {
+  const { userId } = await auth();
+  if (!userId) return new Response("Unauthorized", { status: 401 });
   const body = await req.json();
 
   if (body.version && body.version !== "1") {

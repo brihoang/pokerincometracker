@@ -1,7 +1,10 @@
 import { NextRequest } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { SessionRepository } from "@/lib/repositories/sessions";
 
 export async function GET(req: NextRequest) {
+  const { userId } = await auth();
+  if (!userId) return new Response("Unauthorized", { status: 401 });
   const status = req.nextUrl.searchParams.get("status");
 
   if (status === "open") {
@@ -13,6 +16,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const { userId } = await auth();
+  if (!userId) return new Response("Unauthorized", { status: 401 });
   const body = await req.json();
   const { location_id, location_name, stakes_id, stakes_label, big_blind, buy_in, started_at } = body;
 

@@ -1,11 +1,16 @@
 import { NextRequest } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { StakesRepository } from "@/lib/repositories/stakes";
 
 export async function GET() {
+  const { userId } = await auth();
+  if (!userId) return new Response("Unauthorized", { status: 401 });
   return Response.json(StakesRepository.getAll());
 }
 
 export async function POST(req: NextRequest) {
+  const { userId } = await auth();
+  if (!userId) return new Response("Unauthorized", { status: 401 });
   const body = await req.json();
   const { label, small_blind, big_blind } = body;
 
