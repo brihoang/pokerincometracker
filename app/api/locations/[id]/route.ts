@@ -13,7 +13,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     return Response.json({ error: "Location name is required" }, { status: 400 });
   }
 
-  const updated = LocationRepository.update(id, { name });
+  const updated = await LocationRepository.update(userId, id, { name });
   if (!updated) return Response.json({ error: "Location not found" }, { status: 404 });
 
   return Response.json(updated);
@@ -23,7 +23,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   const { userId } = await auth();
   if (!userId) return new Response("Unauthorized", { status: 401 });
   const { id } = await params;
-  const removed = LocationRepository.delete(id);
+  const removed = await LocationRepository.delete(userId, id);
   if (!removed) return Response.json({ error: "Location not found" }, { status: 404 });
 
   return new Response(null, { status: 204 });
