@@ -1,5 +1,5 @@
 import { AppSettings } from "@/lib/types";
-import { isLoggedIn } from "./auth";
+import { waitForAuth } from "./auth";
 import { getItem, setItem, PIT_SETTINGS } from "@/lib/storage/localStorage";
 
 const defaults: AppSettings = {
@@ -9,14 +9,14 @@ const defaults: AppSettings = {
 };
 
 export async function getSettings(): Promise<AppSettings> {
-  if (isLoggedIn()) return fetch("/api/settings").then((r) => r.json());
+  if (await waitForAuth()) return fetch("/api/settings").then((r) => r.json());
   return getItem<AppSettings>(PIT_SETTINGS) ?? { ...defaults };
 }
 
 export async function updateSettings(
   data: Partial<Omit<AppSettings, "currency_symbol">>
 ): Promise<AppSettings> {
-  if (isLoggedIn()) {
+  if (await waitForAuth()) {
     const res = await fetch("/api/settings", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },

@@ -1,5 +1,5 @@
 import { Stakes } from "@/lib/types";
-import { isLoggedIn } from "./auth";
+import { waitForAuth } from "./auth";
 import { getItem, setItem, PIT_STAKES } from "@/lib/storage/localStorage";
 import { generateId } from "@/lib/utils/uuid";
 
@@ -14,7 +14,7 @@ export function buildStakesLabel(small_blind: number, big_blind: number): string
 }
 
 export async function getStakes(): Promise<Stakes[]> {
-  if (isLoggedIn()) return fetch("/api/stakes").then((r) => r.json());
+  if (await waitForAuth()) return fetch("/api/stakes").then((r) => r.json());
   const stakes = getItem<Stakes[]>(PIT_STAKES) ?? [];
   return stakes.sort((a, b) => {
     if (a.small_blind !== null && b.small_blind !== null) return a.small_blind - b.small_blind;
@@ -26,7 +26,7 @@ export async function getStakes(): Promise<Stakes[]> {
 
 export async function createStakes({ small_blind, big_blind }: StakesInput): Promise<Stakes> {
   const label = buildStakesLabel(small_blind, big_blind);
-  if (isLoggedIn()) {
+  if (await waitForAuth()) {
     const res = await fetch("/api/stakes", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -45,7 +45,7 @@ export async function createStakes({ small_blind, big_blind }: StakesInput): Pro
 
 export async function updateStakes(id: string, { small_blind, big_blind }: StakesInput): Promise<Stakes> {
   const label = buildStakesLabel(small_blind, big_blind);
-  if (isLoggedIn()) {
+  if (await waitForAuth()) {
     const res = await fetch(`/api/stakes/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -64,7 +64,7 @@ export async function updateStakes(id: string, { small_blind, big_blind }: Stake
 }
 
 export async function deleteStakes(id: string): Promise<void> {
-  if (isLoggedIn()) {
+  if (await waitForAuth()) {
     await fetch(`/api/stakes/${id}`, { method: "DELETE" });
     return;
   }

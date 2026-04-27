@@ -1,5 +1,5 @@
 import { Session } from "@/lib/types";
-import { isLoggedIn } from "./auth";
+import { waitForAuth } from "./auth";
 import { getItem, setItem, PIT_SESSIONS } from "@/lib/storage/localStorage";
 import { generateId } from "@/lib/utils/uuid";
 import { calcProfitLoss, calcDurationMins } from "@/lib/utils/calculations";
@@ -25,12 +25,12 @@ function localSave(sessions: Session[]): void {
 }
 
 export async function getSessions(): Promise<Session[]> {
-  if (isLoggedIn()) return fetch("/api/sessions").then((r) => r.json());
+  if (await waitForAuth()) return fetch("/api/sessions").then((r) => r.json());
   return localGetAll();
 }
 
 export async function getSessionById(id: string): Promise<Session | null> {
-  if (isLoggedIn()) {
+  if (await waitForAuth()) {
     const res = await fetch(`/api/sessions/${id}`);
     return res.ok ? res.json() : null;
   }
@@ -38,7 +38,7 @@ export async function getSessionById(id: string): Promise<Session | null> {
 }
 
 export async function getOpenSession(): Promise<Session | null> {
-  if (isLoggedIn()) {
+  if (await waitForAuth()) {
     const sessions: Session[] = await fetch("/api/sessions?status=open").then((r) => r.json());
     return sessions[0] ?? null;
   }
@@ -46,7 +46,7 @@ export async function getOpenSession(): Promise<Session | null> {
 }
 
 export async function createSession(data: CreateSessionData): Promise<Session> {
-  if (isLoggedIn()) {
+  if (await waitForAuth()) {
     const res = await fetch("/api/sessions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -81,7 +81,7 @@ export async function updateSession(
   id: string,
   data: Partial<Omit<Session, "id" | "created_at">>
 ): Promise<Session> {
-  if (isLoggedIn()) {
+  if (await waitForAuth()) {
     const res = await fetch(`/api/sessions/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -111,7 +111,7 @@ export async function updateSession(
 }
 
 export async function deleteSession(id: string): Promise<void> {
-  if (isLoggedIn()) {
+  if (await waitForAuth()) {
     await fetch(`/api/sessions/${id}`, { method: "DELETE" });
     return;
   }

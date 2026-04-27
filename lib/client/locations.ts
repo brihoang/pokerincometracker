@@ -1,16 +1,16 @@
 import { Location } from "@/lib/types";
-import { isLoggedIn } from "./auth";
+import { waitForAuth } from "./auth";
 import { getItem, setItem, PIT_LOCATIONS } from "@/lib/storage/localStorage";
 import { generateId } from "@/lib/utils/uuid";
 
 export async function getLocations(): Promise<Location[]> {
-  if (isLoggedIn()) return fetch("/api/locations").then((r) => r.json());
+  if (await waitForAuth()) return fetch("/api/locations").then((r) => r.json());
   const locations = getItem<Location[]>(PIT_LOCATIONS) ?? [];
   return locations.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export async function createLocation(name: string): Promise<Location> {
-  if (isLoggedIn()) {
+  if (await waitForAuth()) {
     const res = await fetch("/api/locations", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -28,7 +28,7 @@ export async function createLocation(name: string): Promise<Location> {
 }
 
 export async function updateLocation(id: string, name: string): Promise<Location> {
-  if (isLoggedIn()) {
+  if (await waitForAuth()) {
     const res = await fetch(`/api/locations/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -47,7 +47,7 @@ export async function updateLocation(id: string, name: string): Promise<Location
 }
 
 export async function deleteLocation(id: string): Promise<void> {
-  if (isLoggedIn()) {
+  if (await waitForAuth()) {
     await fetch(`/api/locations/${id}`, { method: "DELETE" });
     return;
   }

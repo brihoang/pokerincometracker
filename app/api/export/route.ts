@@ -7,13 +7,19 @@ import { SettingsRepository } from "@/lib/repositories/settings";
 export async function GET() {
   const { userId } = await auth();
   if (!userId) return new Response("Unauthorized", { status: 401 });
+  const [sessions, locations, stakes, settings] = await Promise.all([
+    SessionRepository.getAll(userId),
+    LocationRepository.getAll(userId),
+    StakesRepository.getAll(userId),
+    SettingsRepository.get(userId),
+  ]);
   const payload = {
     version: "1",
     exported_at: new Date().toISOString(),
-    sessions: SessionRepository.getAll(),
-    locations: LocationRepository.getAll(),
-    stakes: StakesRepository.getAll(),
-    settings: SettingsRepository.get(),
+    sessions,
+    locations,
+    stakes,
+    settings,
   };
   return new Response(JSON.stringify(payload), {
     headers: { "Content-Type": "application/json" },

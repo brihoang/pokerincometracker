@@ -1,9 +1,22 @@
-// Returns true when a Clerk session is active on the client.
-// Uses window.__clerk (the global Clerk singleton) so this works outside
-// React components — no hook required. Falls back to false during SSR or
-// before Clerk has loaded.
-export const isLoggedIn = (): boolean => {
-  if (typeof window === "undefined") return false;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return !!((window as any).__clerk?.session);
+let _isLoggedIn = false;
+let _ready = false;
+const _listeners: Array<() => void> = [];
+
+export const setAuthState = (val: boolean) => {
+  _isLoggedIn = val;
+  _ready = true;
+  _listeners.splice(0).forEach((fn) => fn());
+};
+
+export const isLoggedIn = (): boolean => _isLoggedIn;
+
+// Resolves once Clerk has determined auth state (signed in or not).
+// Service functions call this instead of isLoggedIn() to avoid a race
+// where Clerk hasn't loaded yet on initial mount.
+export const waitForAuth = (): Promise<boolean> => {
+  if (typeof window === "undefined") return Promise.resolve(false);
+  if (_ready) return Promise.resolve(_isLoggedIn);
+  return new Promise((resolve) => {
+    _listeners.push(() => resolve(_isLoggedIn));
+  });
 };
