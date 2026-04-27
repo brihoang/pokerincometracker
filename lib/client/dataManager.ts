@@ -1,4 +1,5 @@
 import { getItem, setItem, PIT_SESSIONS, PIT_LOCATIONS, PIT_STAKES, PIT_SETTINGS } from "@/lib/storage/localStorage";
+import { waitForAuth } from "@/lib/client/auth";
 import { AppSettings, Location, Session, Stakes } from "@/lib/types";
 
 export interface ExportPayload {
@@ -35,6 +36,19 @@ export function exportData(): void {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+export async function deleteAllData(): Promise<void> {
+  const loggedIn = await waitForAuth();
+  if (loggedIn) {
+    const res = await fetch("/api/data", { method: "DELETE" });
+    if (!res.ok) throw new Error("Failed to delete data");
+    return;
+  }
+  localStorage.removeItem(PIT_SESSIONS);
+  localStorage.removeItem(PIT_LOCATIONS);
+  localStorage.removeItem(PIT_STAKES);
+  localStorage.removeItem(PIT_SETTINGS);
 }
 
 export function importData(payload: unknown): { imported: { sessions: number; locations: number; stakes: number } } {

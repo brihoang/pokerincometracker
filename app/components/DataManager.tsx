@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { exportData, importData } from "@/lib/client/dataManager";
+import { exportData, importData, deleteAllData } from "@/lib/client/dataManager";
 
 type ImportState =
   | { stage: "idle" }
@@ -9,11 +9,15 @@ type ImportState =
   | { stage: "success"; counts: { sessions: number; locations: number; stakes: number } }
   | { stage: "error"; message: string };
 
+type DeleteState = "idle" | "confirm" | "deleting" | "done";
+
 export default function DataManager() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [exportSuccess, setExportSuccess] = useState(false);
   const [importState, setImportState] = useState<ImportState>({ stage: "idle" });
   const [importing, setImporting] = useState(false);
+  const [deleteState, setDeleteState] = useState<DeleteState>("idle");
+  const [deleting, setDeleting] = useState(false);
 
   function handleExport() {
     exportData();
@@ -57,6 +61,19 @@ export default function DataManager() {
     setImportState({ stage: "idle" });
   }
 
+  async function handleDeleteConfirm() {
+    setDeleting(true);
+    try {
+      await deleteAllData();
+      setDeleteState("done");
+      setTimeout(() => { window.location.href = "/"; }, 800);
+    } catch {
+      setDeleteState("idle");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   return (
     <div className="space-y-3">
       {/* Export */}
@@ -94,6 +111,20 @@ export default function DataManager() {
         />
       </div>
 
+      {/* Delete All Data */}
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-white">Delete All Data</p>
+          <p className="text-xs text-zinc-500">Permanently erase all sessions, locations, and stakes</p>
+        </div>
+        <button
+          onClick={() => setDeleteState("confirm")}
+          className="shrink-0 rounded-lg border border-red-800 bg-zinc-800 px-3 py-2 text-sm text-red-400 hover:border-red-600 hover:text-red-300"
+        >
+          Delete
+        </button>
+      </div>
+
       {/* Import status messages */}
       {importState.stage === "error" && (
         <p className="rounded-lg border border-red-800 bg-red-950 px-4 py-3 text-sm text-red-400">
@@ -111,7 +142,44 @@ export default function DataManager() {
         </p>
       )}
 
-      {/* Confirmation dialog */}
+      {/* Delete confirmation dialog */}
+      {deleteState === "confirm" && (
+        <>
+          <div className="fixed inset-0 z-40 bg-black/60" onClick={() => setDeleteState("idle")} />
+          <div className="fixed inset-x-4 top-1/2 z-50 mx-auto max-w-sm -translate-y-1/2 rounded-2xl border border-zinc-700 bg-zinc-900 p-6 shadow-xl">
+            <h3 className="mb-2 text-base font-semibold text-white">Delete all data?</h3>
+            <p className="mb-3 text-sm text-zinc-400">
+              This will permanently erase all your sessions, locations, stakes, and settings. There is no undo.
+            </p>
+            <p className="mb-5 rounded-lg border border-amber-800 bg-amber-950/50 px-3 py-2.5 text-xs text-amber-400">
+              We recommend exporting your data as a backup before deleting.
+            </p>
+            <button
+              onClick={() => { exportData(); }}
+              className="mb-4 w-full rounded-lg border border-zinc-700 py-2 text-sm text-zinc-300 hover:border-zinc-500 hover:text-white"
+            >
+              Export Backup First
+            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteState("idle")}
+                className="flex-1 rounded-lg border border-zinc-700 py-2.5 text-sm text-zinc-400 hover:border-zinc-500 hover:text-white"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                disabled={deleting}
+                className="flex-1 rounded-lg bg-red-700 py-2.5 text-sm font-medium text-white hover:bg-red-600 disabled:opacity-50"
+              >
+                {deleting ? "Deleting…" : "Delete Everything"}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Import confirmation dialog */}
       {importState.stage === "confirm" && (
         <>
           <div className="fixed inset-0 z-40 bg-black/60" onClick={handleCancel} />
