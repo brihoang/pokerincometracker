@@ -6,6 +6,7 @@ import { dark } from "@clerk/themes";
 import NavBar from "@/app/components/NavBar";
 import OpenSessionBanner from "@/app/components/OpenSessionBanner";
 import AuthSync from "@/app/components/AuthSync";
+import MigrationBanner from "@/app/components/MigrationBanner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,6 +36,7 @@ export default function RootLayout({
       >
         <body className="min-h-full flex flex-col">
           <AuthSync />
+          <MigrationBanner />
           <NavBar />
           <OpenSessionBanner />
           {children}

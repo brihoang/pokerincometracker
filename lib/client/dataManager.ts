@@ -1,6 +1,6 @@
 import { getItem, setItem, PIT_SESSIONS, PIT_LOCATIONS, PIT_STAKES, PIT_SETTINGS } from "@/lib/storage/localStorage";
-import { waitForAuth } from "@/lib/client/auth";
 import { AppSettings, Location, Session, Stakes } from "@/lib/types";
+import { waitForAuth } from "@/lib/client/auth";
 
 export interface ExportPayload {
   version: "1";
@@ -17,8 +17,8 @@ const DEFAULT_SETTINGS: AppSettings = {
   default_stakes_id: null,
 };
 
-export function exportData(): void {
-  const payload: ExportPayload = {
+function buildLocalPayload(): ExportPayload {
+  return {
     version: "1",
     exported_at: new Date().toISOString(),
     sessions: getItem<Session[]>(PIT_SESSIONS) ?? [],
@@ -26,7 +26,31 @@ export function exportData(): void {
     stakes: getItem<Stakes[]>(PIT_STAKES) ?? [],
     settings: getItem<AppSettings>(PIT_SETTINGS) ?? { ...DEFAULT_SETTINGS },
   };
+}
 
+export function hasLocalData(): boolean {
+  if (typeof window === "undefined") return false;
+  const s = getItem<Session[]>(PIT_SESSIONS) ?? [];
+  const l = getItem<Location[]>(PIT_LOCATIONS) ?? [];
+  const st = getItem<Stakes[]>(PIT_STAKES) ?? [];
+  const se = getItem<AppSettings>(PIT_SETTINGS);
+  return s.length > 0 || l.length > 0 || st.length > 0 || se !== null;
+}
+
+export function clearLocalData(): void {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(PIT_SESSIONS);
+  localStorage.removeItem(PIT_LOCATIONS);
+  localStorage.removeItem(PIT_STAKES);
+  localStorage.removeItem(PIT_SETTINGS);
+}
+
+export function getLocalPayload(): ExportPayload {
+  return buildLocalPayload();
+}
+
+export function exportData(): void {
+  const payload = buildLocalPayload();
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -45,10 +69,7 @@ export async function deleteAllData(): Promise<void> {
     if (!res.ok) throw new Error("Failed to delete data");
     return;
   }
-  localStorage.removeItem(PIT_SESSIONS);
-  localStorage.removeItem(PIT_LOCATIONS);
-  localStorage.removeItem(PIT_STAKES);
-  localStorage.removeItem(PIT_SETTINGS);
+  clearLocalData();
 }
 
 export function importData(payload: unknown): { imported: { sessions: number; locations: number; stakes: number } } {

@@ -1,20 +1,18 @@
 import { NextRequest } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { SessionRepository } from "@/lib/repositories/sessions";
-import { LocationRepository } from "@/lib/repositories/locations";
-import { StakesRepository } from "@/lib/repositories/stakes";
-import { SettingsRepository } from "@/lib/repositories/settings";
-import { setItem, PIT_SESSIONS, PIT_LOCATIONS, PIT_STAKES, PIT_SETTINGS } from "@/lib/storage/localStorage";
+import { db } from "@/lib/db";
+import { sessions, locations, stakes, settings } from "@/lib/schema";
+import { eq } from "drizzle-orm";
 
 export async function POST(req: NextRequest) {
   const { userId } = await auth();
   if (!userId) return new Response("Unauthorized", { status: 401 });
+
   const body = await req.json();
 
   if (body.version && body.version !== "1") {
     return Response.json({ error: `Unsupported version: ${body.version}` }, { status: 400 });
   }
-
   if (!Array.isArray(body.sessions)) {
     return Response.json({ error: "Missing or invalid 'sessions' array" }, { status: 400 });
   }
@@ -35,16 +33,78 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  setItem(PIT_SESSIONS, body.sessions);
-  setItem(PIT_LOCATIONS, body.locations);
-  setItem(PIT_STAKES, body.stakes);
-  if (body.settings) setItem(PIT_SETTINGS, body.settings);
+  // Full replace: delete all existing data for this user, then bulk insert
+  await Promise.all([
+    db.delete(sessions).where(eq(sessions.user_id, userId)),
+    db.delete(locations).where(eq(locations.user_id, userId)),
+    db.delete(stakes).where(eq(stakes.user_id, userId)),
+    db.delete(settings).where(eq(settings.user_id, userId)),
+  ]);
 
-  // suppress unused import warnings — repositories used in V2 when setItem is replaced
-  void SessionRepository;
-  void LocationRepository;
-  void StakesRepository;
-  void SettingsRepository;
+  if (body.sessions.length > 0) {
+    await db.insert(sessions).values(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      body.sessions.map((s: any) => ({
+        id: s.id,
+        user_id: userId,
+        started_at: new Date(s.started_at),
+        ended_at: s.ended_at ? new Date(s.ended_at) : null,
+        duration_mins: s.duration_mins ?? null,
+        location_id: s.location_id,
+        location_name: s.location_name,
+        stakes_id: s.stakes_id,
+        stakes_label: s.stakes_label,
+        big_blind: s.big_blind != null ? Math.round(s.big_blind * 100) : null,
+        game_type: s.game_type ?? "NLH",
+        buy_in: Math.round(s.buy_in * 100),
+        cash_out: s.cash_out != null ? Math.round(s.cash_out * 100) : null,
+        profit_loss: s.profit_loss != null ? Math.round(s.profit_loss * 100) : null,
+        notes: s.notes ?? null,
+        rating: s.rating ?? null,
+        status: s.status,
+        created_at: new Date(s.created_at),
+        updated_at: new Date(s.updated_at),
+      }))
+    );
+  }
+
+  if (body.locations.length > 0) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await db.insert(locations).values(body.locations.map((l: any) => ({
+      id: l.id,
+      user_id: userId,
+      name: l.name,
+      created_at: new Date(l.created_at),
+      updated_at: new Date(l.updated_at),
+    })));
+  }
+
+  if (body.stakes.length > 0) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await db.insert(stakes).values(body.stakes.map((s: any) => ({
+      id: s.id,
+      user_id: userId,
+      label: s.label,
+      small_blind: s.small_blind != null ? Math.round(s.small_blind * 100) : null,
+      big_blind: s.big_blind != null ? Math.round(s.big_blind * 100) : null,
+      created_at: new Date(s.created_at),
+      updated_at: new Date(s.updated_at),
+    })));
+  }
+
+  if (body.settings) {
+    await db.insert(settings).values({
+      user_id: userId,
+      default_location_id: body.settings.default_location_id ?? null,
+      default_stakes_id: body.settings.default_stakes_id ?? null,
+    }).onConflictDoUpdate({
+      target: settings.user_id,
+      set: {
+        default_location_id: body.settings.default_location_id ?? null,
+        default_stakes_id: body.settings.default_stakes_id ?? null,
+      },
+    });
+  }
 
   return Response.json({
     imported: {
