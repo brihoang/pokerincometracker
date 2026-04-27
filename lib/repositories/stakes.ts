@@ -1,21 +1,30 @@
-import type { Stakes } from "@/lib/types";
-import { getItem, setItem, PIT_STAKES } from "@/lib/storage/localStorage";
+import { eq, and } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { stakes } from "@/lib/schema";
 import { generateId } from "@/lib/utils/uuid";
+import type { Stakes } from "@/lib/types";
 
 type CreateInput = Omit<Stakes, "id" | "created_at" | "updated_at">;
 type UpdateInput = Partial<Omit<Stakes, "id" | "created_at" | "updated_at">>;
 
-function load(): Stakes[] {
-  return getItem<Stakes[]>(PIT_STAKES) ?? [];
-}
-
-function save(stakes: Stakes[]): void {
-  setItem(PIT_STAKES, stakes);
+function rowToStakes(row: typeof stakes.$inferSelect): Stakes {
+  return {
+    id: row.id,
+    label: row.label,
+    small_blind: row.small_blind != null ? row.small_blind / 100 : null,
+    big_blind: row.big_blind != null ? row.big_blind / 100 : null,
+    created_at: row.created_at.toISOString(),
+    updated_at: row.updated_at.toISOString(),
+  };
 }
 
 export const StakesRepository = {
-  getAll(): Stakes[] {
-    return load().sort((a, b) => {
+  async getAll(userId: string): Promise<Stakes[]> {
+    const rows = await db
+      .select()
+      .from(stakes)
+      .where(eq(stakes.user_id, userId));
+    return rows.map(rowToStakes).sort((a, b) => {
       if (a.small_blind === null && b.small_blind === null) {
         return a.label.localeCompare(b.label);
       }
@@ -26,35 +35,55 @@ export const StakesRepository = {
     });
   },
 
-  getById(id: string): Stakes | null {
-    return load().find((s) => s.id === id) ?? null;
+  async getById(userId: string, id: string): Promise<Stakes | null> {
+    const rows = await db
+      .select()
+      .from(stakes)
+      .where(and(eq(stakes.user_id, userId), eq(stakes.id, id)));
+    return rows.length > 0 ? rowToStakes(rows[0]) : null;
   },
 
-  create(data: CreateInput): Stakes {
+  async create(userId: string, data: CreateInput): Promise<Stakes> {
     if (!data.label.trim()) throw new Error("label is required");
-    const now = new Date().toISOString();
-    const entry: Stakes = { ...data, id: generateId(), created_at: now, updated_at: now };
-    const all = load();
-    all.push(entry);
-    save(all);
-    return entry;
+    const now = new Date();
+    const id = generateId();
+    const rows = await db
+      .insert(stakes)
+      .values({
+        id,
+        user_id: userId,
+        label: data.label.trim(),
+        small_blind: data.small_blind != null ? Math.round(data.small_blind * 100) : null,
+        big_blind: data.big_blind != null ? Math.round(data.big_blind * 100) : null,
+        created_at: now,
+        updated_at: now,
+      })
+      .returning();
+    return rowToStakes(rows[0]);
   },
 
-  update(id: string, data: UpdateInput): Stakes | null {
-    const all = load();
-    const idx = all.findIndex((s) => s.id === id);
-    if (idx === -1) return null;
-    const updated = { ...all[idx], ...data, updated_at: new Date().toISOString() };
-    all[idx] = updated;
-    save(all);
-    return updated;
+  async update(userId: string, id: string, data: UpdateInput): Promise<Stakes | null> {
+    const setValues: Partial<typeof stakes.$inferInsert> = { updated_at: new Date() };
+    if (data.label !== undefined) setValues.label = data.label.trim();
+    if (data.small_blind !== undefined) {
+      setValues.small_blind = data.small_blind != null ? Math.round(data.small_blind * 100) : null;
+    }
+    if (data.big_blind !== undefined) {
+      setValues.big_blind = data.big_blind != null ? Math.round(data.big_blind * 100) : null;
+    }
+    const rows = await db
+      .update(stakes)
+      .set(setValues)
+      .where(and(eq(stakes.user_id, userId), eq(stakes.id, id)))
+      .returning();
+    return rows.length > 0 ? rowToStakes(rows[0]) : null;
   },
 
-  delete(id: string): boolean {
-    const all = load();
-    const next = all.filter((s) => s.id !== id);
-    if (next.length === all.length) return false;
-    save(next);
-    return true;
+  async delete(userId: string, id: string): Promise<boolean> {
+    const rows = await db
+      .delete(stakes)
+      .where(and(eq(stakes.user_id, userId), eq(stakes.id, id)))
+      .returning();
+    return rows.length > 0;
   },
 };

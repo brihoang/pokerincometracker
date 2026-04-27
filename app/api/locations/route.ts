@@ -5,7 +5,7 @@ import { LocationRepository } from "@/lib/repositories/locations";
 export async function GET() {
   const { userId } = await auth();
   if (!userId) return new Response("Unauthorized", { status: 401 });
-  return Response.json(LocationRepository.getAll());
+  return Response.json(await LocationRepository.getAll(userId));
 }
 
 export async function POST(req: NextRequest) {
@@ -18,11 +18,11 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: "Location name is required" }, { status: 400 });
   }
 
-  const all = LocationRepository.getAll();
+  const all = await LocationRepository.getAll(userId);
   if (all.some((l) => l.name.toLowerCase() === name.trim().toLowerCase())) {
     return Response.json({ error: "A location with this name already exists" }, { status: 409 });
   }
 
-  const location = LocationRepository.create({ name });
+  const location = await LocationRepository.create(userId, { name });
   return Response.json(location, { status: 201 });
 }
